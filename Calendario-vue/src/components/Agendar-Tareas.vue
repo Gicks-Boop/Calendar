@@ -1,17 +1,20 @@
 <template>
+
   <div>
     <!-- Overlay modal que cubre toda la pantalla cuando está activo -->
     <div
-      v-if="mostrarModal"
-      class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50"
+        v-if="mostrarModal"
+      class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300"
+      :class="{ 'opacity-100': mostrarModal, 'opacity-0': !mostrarModal }"
       @click.self="cerrarModal"
     >
       <!-- Contenedor del modal -->
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden transform transition-all">
+      <div class="bg-white rounded-lg shadow-xl transform"
+      :class="{ 'animate-modal-appear': mostrarModal }">
         <!-- Cabecera del modal -->
         <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
           <h3 class="text-lg font-bold">
-            {{ eventoEditando ? 'Editar tarea' : 'Agendar tarea' }}: {{ fechaFormateada }}
+            {{ eventoEditar ? 'Editar tarea' : 'Agendar tarea' }}: {{ fechaFormateada }}
           </h3>
           <button @click="cerrarModal" class="text-white hover:text-gray-200 focus:outline-none">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,7 +104,7 @@
                 type="submit"
                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                {{ eventoEditando ? 'Actualizar' : 'Guardar' }} evento
+                {{ eventoEditar ? 'Actualizar' : 'Guardar' }} evento
               </button>
             </div>
           </form>
@@ -123,18 +126,19 @@ export default {
       type: Date,
       default: null
     },
-    eventoEditando: {
+    eventoEditar: {
       type: Object,
       default: null
     },
     categorias: {
       type: Array,
       default: () => [
-        { nombre: 'Cumpleaños', valor: 'cumpleanos', color: '#FF5252' },
-        { nombre: 'Día Inhábil', valor: 'dia_inhabil', color: '#9C27B0' },
-        { nombre: 'Sacar Basura', valor: 'basura', color: '#4CAF50' },
-        { nombre: 'Recordatorio', valor: 'recordatorio', color: '#2196F3' },
-        { nombre: 'Personal', valor: 'personal', color: '#FF9800' }
+        { nombre: 'Trabajo', valor: 'trabajo', color: '#4299e1' },
+        { nombre: 'Personal', valor: 'personal', color: '#48bb78' },
+        { nombre: 'Importante', valor: 'importante', color: '#fc2f2c' },
+        { nombre: 'Basura', valor: 'basura', color: '#8a4e03' },
+        { nombre: 'Cumpleaños', valor: 'cumpleaños', color:'#e64e81' },
+        { nombre: 'Otro', valor: 'otro', color: '#9f7aea' },
       ]
     }
   },
@@ -161,8 +165,8 @@ export default {
     }
   },
   watch: {
-    // Observar cambios en eventoEditando para cargar datos cuando se edita
-    eventoEditando(evento) {
+    // Observar cambios en eventoEditar para cargar datos cuando se edita
+    eventoEditar(evento) {
       if (evento) {
         this.nuevoEvento = {
           titulo: evento.titulo || '',
@@ -178,11 +182,11 @@ export default {
         // No limpiar inmediatamente para permitir que los datos persistan
         // hasta que el modal se cierre completamente
         setTimeout(() => {
-          if (!this.mostrarModal && !this.eventoEditando) {
+          if (!this.mostrarModal && !this.eventoEditar) {
             this.limpiarFormulario();
           }
         }, 300);
-      } else if (visible && !this.eventoEditando) {
+      } else if (visible && !this.eventoEditar) {
         // Si se abre el modal y no estamos editando, limpiar el formulario
         this.limpiarFormulario();
       }
@@ -199,10 +203,10 @@ export default {
     guardarEvento() {
       let evento;
 
-      if (this.eventoEditando) {
+      if (this.eventoEditar) {
         // Actualizar evento existente
         evento = {
-          ...this.eventoEditando,
+          ...this.eventoEditar,
           titulo: this.nuevoEvento.titulo,
           categoria: this.nuevoEvento.categoria,
           descripcion: this.nuevoEvento.descripcion,
@@ -214,7 +218,7 @@ export default {
         evento = {
           ...this.nuevoEvento,
           fecha: new Date(this.fechaSeleccionada),
-          id: Date.now(), // ID único simple basado en timestamp
+          id: Date.now() + Math.random().toString(36).substring(2, 9), // ID único más seguro
           color: this.obtenerColorCategoria(this.nuevoEvento.categoria)
         };
       }
@@ -232,3 +236,24 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+@keyframes modal-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-modal-appear {
+  animation: modal-appear 0.3s ease-out forwards;
+}
+</style>

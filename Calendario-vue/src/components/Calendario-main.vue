@@ -2,15 +2,16 @@
   <div
     class="w-full h-screen flex flex-col bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl overflow-hidden border border-gray-200"
   >
+    <!-- Componente VisualizadorTareas -->
     <visualizador-tareas
-      :dia-seleccionado="diaSeleccionado"
       :eventos="eventos"
       :categorias="categorias"
-      @abrir-modal-tarea="abrirModalAgendar"
       @editar-evento="editarEvento"
-      @eliminar-evento="eliminarEvento"
+      @eliminar-evento="eliminarEventoYPropagar"
+      @eliminar-tareas-mes="eliminarTareasMes"
     ></visualizador-tareas>
-    <!-- Header con botón de cierre de sesión -->
+
+    <!-- Header con botón de menú -->
     <div
       class="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-blue-500 to-indigo-600 border-b border-blue-600"
     >
@@ -62,27 +63,13 @@
         </button>
       </div>
 
-      <!-- Botón de cierre de sesión -->
-      <button
-        @click="cerrarSesion"
-        class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm flex items-center"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-4 w-4 mr-1"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-          />
-        </svg>
-        Cerrar sesión
-      </button>
+      <!-- SideBar component -->
+      <side-bar
+        :usuario="usuario"
+        @cerrar-sesion="cerrarSesion"
+        @asignar-basura="handleAsignarBasura"
+        @ruleta="handleRuleta"
+      ></side-bar>
     </div>
 
     <div
@@ -98,7 +85,7 @@
         @click="selectDay(dia)"
         :class="[
           'flex flex-col items-center justify-start p-2 relative rounded-lg transition-all duration-200 h-full',
-          { 'bg-red-500 text-white font-bold shadow-lg ring-2 ring-red-300': dia.esHoy },
+          { 'bg-blue-700 text-white font-bold shadow-lg ring-2 ring-blue-500': dia.esHoy },
           { 'bg-blue-100 font-medium border border-blue-300': dia.esSeleccionado && !dia.esHoy },
           { 'text-gray-400 bg-gray-50 border border-gray-200': !dia.esMesActual },
           {
@@ -110,7 +97,7 @@
         <span
           :class="[
             'text-base font-medium mb-1 z-10 w-8 h-8 flex items-center justify-center rounded-full',
-            { 'bg-red-500': dia.esHoy },
+            { 'bg-blue-500': dia.esHoy },
             { 'hover:bg-blue-100': dia.esMesActual && !dia.esHoy && !dia.esSeleccionado },
           ]"
           >{{ dia.numero }}</span
@@ -135,8 +122,10 @@
     <agendar-tareas
       :mostrar-modal="mostrarModalTarea"
       :fecha-seleccionada="diaSeleccionado"
+      :evento-editar="eventoEditando"
+      :categorias="categorias"
       @cerrar="cerrarModalTarea"
-      @guardar-evento="guardarEvento"
+      @guardar-evento="guardarEventoYPropagar"
     />
   </div>
 </template>
@@ -144,15 +133,21 @@
 <script>
 import AgendarTareas from "./Agendar-Tareas.vue";
 import VisualizadorTareas from "./VisualizadorTareas.vue";
+import SideBar from "./SideBar.vue";
 
 export default {
   name: "CalendarioMain",
   components: {
     AgendarTareas,
     VisualizadorTareas,
+    SideBar,
   },
   props: {
     usuario: {
+      type: Object,
+      default: () => ({}),
+    },
+    eventos: {
       type: Object,
       default: () => ({}),
     },
@@ -163,8 +158,16 @@ export default {
       diaSeleccionado: null,
       diasSemana: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
       mostrarModalTarea: false,
-      eventos: {}, // Objeto para almacenar eventos reales por fecha
-      eventoEditado: null,
+      eventoEditando: null,
+      fechaOriginalEvento: null, // Para guardar la fecha original formateada
+      categorias: [
+        { nombre: "Trabajo", valor: "trabajo", color: "#4299e1" },
+        { nombre: "Personal", valor: "personal", color: "#48bb78" },
+        { nombre: "Importante", valor: "importante", color: "#fc2f2c" },
+        { nombre: "Basura", valor: "basura", color: "#8a4e03" },
+        { nombre: 'Cumpleaños', valor: 'cumpleaños', color:'#e64e81' },
+        { nombre: "Otro", valor: "otro", color: "#9f7aea" },
+      ],
     };
   },
   computed: {
@@ -233,15 +236,28 @@ export default {
     },
   },
   methods: {
-    // Método de cierre de sesión
+    // Propagar el evento de cierre de sesión al componente padre
     cerrarSesion() {
-      // Emitir el evento que App.vue está esperando
       this.$emit("cerrar-sesion");
     },
+
+    // Manejar el evento de asignar basura
+    handleAsignarBasura() {
+      console.log("CalendarioMain: Propagando evento asignar-basura");
+      this.$emit("asignar-basura");
+    },
+
+    // Manejar el evento de ruleta
+    handleRuleta() {
+      console.log("CalendarioMain: Propagando evento ruleta");
+      this.$emit("ruleta");
+    },
+
     esHoy(año, mes, dia) {
       const hoy = new Date();
       return año === hoy.getFullYear() && mes === hoy.getMonth() && dia === hoy.getDate();
     },
+
     esSeleccionado(año, mes, dia) {
       if (!this.diaSeleccionado) return false;
       return (
@@ -250,13 +266,18 @@ export default {
         dia === this.diaSeleccionado.getDate()
       );
     },
+
     selectDay(dia) {
+      this.diaSeleccionado = dia.fecha;
+      this.eventoEditando = null; // Resetear evento en edición
+      this.$emit("dia-seleccionado", dia.fecha);
+
+      // Solo mostrar modal si es un día del mes actual
       if (dia.esMesActual) {
-        this.diaSeleccionado = dia.fecha;
         this.mostrarModalTarea = true;
-        this.$emit("dia-seleccionado", dia.fecha);
       }
     },
+
     prevMonth() {
       this.fechaActual = new Date(
         this.fechaActual.getFullYear(),
@@ -264,6 +285,7 @@ export default {
         1
       );
     },
+
     nextMonth() {
       this.fechaActual = new Date(
         this.fechaActual.getFullYear(),
@@ -271,78 +293,107 @@ export default {
         1
       );
     },
+
     formatFecha(fecha) {
+      if (!fecha) return "";
+
+      // Si fecha es string, convertir a objeto Date
+      if (typeof fecha === "string") {
+        const [año, mes, dia] = fecha.split("-");
+        fecha = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia));
+      }
+
       const año = fecha.getFullYear();
       const mes = String(fecha.getMonth() + 1).padStart(2, "0");
       const dia = String(fecha.getDate()).padStart(2, "0");
       return `${año}-${mes}-${dia}`;
     },
+
     tieneEventos(dia) {
       const fechaFormateada = this.formatFecha(dia.fecha);
       return this.eventos[fechaFormateada] && this.eventos[fechaFormateada].length > 0;
     },
+
     getEventos(dia) {
       const fechaFormateada = this.formatFecha(dia.fecha);
       return this.eventos[fechaFormateada] || [];
     },
+
+    getEventosDelDia(fecha) {
+      if (!fecha) return [];
+      const fechaFormateada = this.formatFecha(fecha);
+      return this.eventos[fechaFormateada] || [];
+    },
+
     cerrarModalTarea() {
       this.mostrarModalTarea = false;
+      this.eventoEditando = null;
     },
-    guardarEvento(evento) {
-      // Formatear la fecha para usar como clave en el objeto eventos
-      const fechaFormateada = this.formatFecha(evento.fecha);
 
-      // Crear una copia del objeto eventos
-      const nuevoEventos = { ...this.eventos };
-
-      // Verificar si ya existe un array para esta fecha
-      if (!nuevoEventos[fechaFormateada]) {
-        nuevoEventos[fechaFormateada] = [];
-      }
-
-      // Buscar si este evento ya existe (para edición)
-      const indiceExistente = nuevoEventos[fechaFormateada].findIndex((e) => e.id === evento.id);
-
-      if (indiceExistente >= 0) {
-        // Actualizar evento existente
-        nuevoEventos[fechaFormateada][indiceExistente] = evento;
-      } else {
-        // Agregar nuevo evento
-        nuevoEventos[fechaFormateada].push(evento);
-      }
-
-      // Asignar el nuevo objeto completo para mantener la reactividad
-      this.eventos = nuevoEventos;
-
-      // Cerrar el modal
+    guardarEventoYPropagar(evento) {
+      // Propagar el evento al componente padre (App.vue)
+      this.$emit("guardar-evento", evento);
       this.cerrarModalTarea();
     },
-        abrirModalAgendar() {
+
+    eliminarEventoYPropagar(id, fecha) {
+      // Si se recibió una fecha, usar esa
+      if (fecha) {
+        this.$emit("eliminar-evento", id, fecha);
+        return;
+      }
+
+      // Sino, buscar el evento en todos los días
+      let fechaEvento = "";
+
+      Object.keys(this.eventos).forEach((fecha) => {
+        const evento = this.eventos[fecha].find((e) => e.id === id);
+        if (evento) {
+          fechaEvento = fecha;
+        }
+      });
+
+      if (fechaEvento) {
+        this.$emit("eliminar-evento", id, fechaEvento);
+      }
+    },
+
+    abrirModalAgendar() {
       this.eventoEditando = null; // Resetear para un nuevo evento
       this.mostrarModalTarea = true;
     },
-    eliminarEvento(id, fecha) {
-      if (this.eventos[fecha]) {
-        this.eventos[fecha] = this.eventos[fecha].filter((evento) => evento.id !== id);
-
-        // Si no quedan eventos, elimina la entrada para esa fecha
-        if (this.eventos[fecha].length === 0) {
-          delete this.eventos[fecha];
-        }
-      }
-    },
 
     editarEvento(evento) {
-      // Copia los datos del evento al formulario
-      this.eventoEditando = evento;
+      // Crear una copia profunda del evento para no modificar el original
+      this.eventoEditando = JSON.parse(JSON.stringify(evento));
 
-      // Actualiza nuevoEvento en el componente AgendarTareas
-      // Esto requiere una modificación en AgendarTareas para soportar edición
+      // Si la fecha viene como string, convertir a objeto Date
+      if (typeof this.eventoEditando.fecha === "string") {
+        const [año, mes, dia] = this.eventoEditando.fecha.split("-");
+        this.eventoEditando.fecha = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia));
+      }
+
+      // Guardar la fecha original formateada para eliminar el evento original después
+      this.fechaOriginalEvento = this.formatFecha(evento.fecha);
+
+      // Mostrar el modal de edición
       this.mostrarModalTarea = true;
-
-      // Puedes emitir un evento que AgendarTareas escuchará
-      this.$emit("editar-evento", evento);
     },
+
+    // Método para manejar toasts/notificaciones
+    mostrarToast(mensaje, tipo) {
+      // Implementar si se requiere un sistema de notificaciones
+      console.log(`[${tipo}] ${mensaje}`);
+    },
+    eliminarTareasMes(fechasAEliminar) {
+      // Propagar el evento al componente padre (App.vue)
+      this.$emit("eliminar-tareas-mes", fechasAEliminar);
+    },
+  },
+
+  created() {
+    // Establecer el día seleccionado como hoy al iniciar
+    this.diaSeleccionado = new Date();
   },
 };
 </script>
