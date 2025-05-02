@@ -232,10 +232,10 @@
               <!-- Lista de personas disponibles - Mejorada visualmente -->
               <div class="justify-between items-center mb-3">
                 <div class="flex">
-                <h4 class="font-medium text-xs sm:text-sm text-gray-700 mr-auto">
-                  Personas disponibles:
-                </h4>
-                <button
+                  <h4 class="font-medium text-xs sm:text-sm text-gray-700 mr-auto">
+                    Personas disponibles:
+                  </h4>
+                  <button
                     v-if="personasDisponibles.length > 0 || asignaciones.length > 0"
                     @click="limpiarPersonas"
                     class="text-sm text-red-500 hover:text-red-700 flex items-center ml-auto"
@@ -257,8 +257,10 @@
                     Limpiar
                   </button>
                 </div>
-                <div class="w-full bg-gray-50 rounded-lg p-2 mb-2 min-h-16"
-                 v-if="personasDisponibles.length > 0 || asignaciones.length > 0">
+                <div
+                  class="w-full bg-gray-50 rounded-lg p-2 mb-2 min-h-16"
+                  v-if="personasDisponibles.length > 0 || asignaciones.length > 0"
+                >
                   <div
                     class="flex flex-wrap gap-2"
                     role="list"
@@ -310,11 +312,11 @@
 
               <!-- Lista de asignaciones -->
               <div>
-                <div class="flex ">
-                <h4 class="font-medium text-xs sm:text-sm text-gray-700 mb-1 sm:mb-2">
-                  Asignaciones realizadas:
-                </h4>
-                <button
+                <div class="flex">
+                  <h4 class="font-medium text-xs sm:text-sm text-gray-700 mb-1 sm:mb-2">
+                    Asignaciones realizadas:
+                  </h4>
+                  <button
                     v-if="asignaciones.length > 0"
                     @click="limpiarAsignaciones"
                     class="text-sm text-red-500 hover:text-red-700 flex items-center ml-auto"
@@ -335,7 +337,7 @@
                     </svg>
                     Limpiar
                   </button>
-              </div>
+                </div>
                 <div
                   v-if="asignaciones.length > 0"
                   class="max-h-32 sm:max-h-40 overflow-y-auto pr-2 space-y-1 sm:space-y-2"
@@ -591,7 +593,7 @@ export default {
       this.guardarEnLocalStorage();
     },
 
-    limpiarAsignaciones(){
+    limpiarAsignaciones() {
       this.asignaciones = [];
     },
 

@@ -216,6 +216,7 @@
 <script>
 export default {
   name: 'AuthComponent',
+
   data() {
     return {
       esModoRegistro: false,

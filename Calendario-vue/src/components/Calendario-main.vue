@@ -165,7 +165,7 @@ export default {
         { nombre: "Personal", valor: "personal", color: "#48bb78" },
         { nombre: "Importante", valor: "importante", color: "#fc2f2c" },
         { nombre: "Basura", valor: "basura", color: "#8a4e03" },
-        { nombre: 'Cumpleaños', valor: 'cumpleaños', color:'#e64e81' },
+        { nombre: "Cumpleaños", valor: "cumpleaños", color: "#e64e81" },
         { nombre: "Otro", valor: "otro", color: "#9f7aea" },
       ],
     };

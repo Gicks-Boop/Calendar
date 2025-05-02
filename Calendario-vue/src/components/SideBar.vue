@@ -32,12 +32,14 @@
         <!-- Información del usuario -->
         <div class="px-4 py-2 mb-4 border-b border-gray-200">
           <div class="flex items-center space-x-3">
-            <div class="bg-blue-600 rounded-full w-10 h-10 flex items-center justify-center text-white font-bold">
+            <div
+              class="bg-blue-600 rounded-full w-10 h-10 flex items-center justify-center text-white font-bold"
+            >
               {{ iniciales }}
             </div>
             <div>
-              <div class="font-medium text-gray-900">{{ usuario.nombre || 'Usuario' }}</div>
-              <div class="text-sm text-gray-500">{{ usuario.email || 'usuario@ejemplo.com' }}</div>
+              <div class="font-medium text-gray-900">{{ usuario.nombre || "Usuario" }}</div>
+              <div class="text-sm text-gray-500">{{ usuario.email || "usuario@ejemplo.com" }}</div>
             </div>
           </div>
         </div>
@@ -126,7 +128,7 @@
 
 <script>
 export default {
-  name: 'SideBar',
+  name: "SideBar",
   props: {
     usuario: {
       type: Object,
@@ -141,14 +143,14 @@ export default {
   computed: {
     iniciales() {
       if (this.usuario && this.usuario.nombre) {
-        const palabras = this.usuario.nombre.split(' ');
+        const palabras = this.usuario.nombre.split(" ");
         if (palabras.length > 1) {
           return (palabras[0][0] + palabras[1][0]).toUpperCase();
         }
         return palabras[0][0].toUpperCase();
       }
-      return 'U';
-    }
+      return "U";
+    },
   },
   methods: {
     toggleMenu() {
@@ -156,19 +158,19 @@ export default {
     },
     handleAsignarBasura() {
       console.log("SideBar: Emitiendo evento asignar-basura");
-      this.$emit('asignar-basura');
+      this.$emit("asignar-basura");
       this.toggleMenu();
     },
     handleRuleta() {
       console.log("SideBar: Emitiendo evento ruleta");
-      this.$emit('ruleta');
+      this.$emit("ruleta");
       this.toggleMenu();
     },
     cerrarSesion() {
       console.log("SideBar: Emitiendo evento cerrar-sesion");
-      this.$emit('cerrar-sesion');
+      this.$emit("cerrar-sesion");
       this.toggleMenu();
-    }
-  }
+    },
+  },
 };
 </script>

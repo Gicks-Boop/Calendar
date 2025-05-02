@@ -456,26 +456,26 @@ export default {
   },
   methods: {
     cerrarModal() {
-     // Aplicar animación de salida
-  const modalElement = this.$el.querySelector('.bg-white');
-  if (modalElement) {
-    modalElement.classList.remove('animate-modal-appear');
-    modalElement.classList.add('animate-modal-disappear');
+      // Aplicar animación de salida
+      const modalElement = this.$el.querySelector(".bg-white");
+      if (modalElement) {
+        modalElement.classList.remove("animate-modal-appear");
+        modalElement.classList.add("animate-modal-disappear");
 
-    // Aplicar fade out al backdrop
-    const backdropElement = this.$el.querySelector('.fixed.inset-0');
-    if (backdropElement) {
-      backdropElement.classList.add('opacity-0');
-    }
+        // Aplicar fade out al backdrop
+        const backdropElement = this.$el.querySelector(".fixed.inset-0");
+        if (backdropElement) {
+          backdropElement.classList.add("opacity-0");
+        }
 
-    // Esperar a que termine la animación antes de cerrar completamente
-    setTimeout(() => {
-      this.$emit("cerrar");
-    }, 200); // Duración de la animación en ms
-  } else {
-    // Si por alguna razón no se encuentra el elemento, cerrar inmediatamente
-    this.$emit("cerrar");
-  }
+        // Esperar a que termine la animación antes de cerrar completamente
+        setTimeout(() => {
+          this.$emit("cerrar");
+        }, 200); // Duración de la animación en ms
+      } else {
+        // Si por alguna razón no se encuentra el elemento, cerrar inmediatamente
+        this.$emit("cerrar");
+      }
     },
 
     mostrarConfirmacionLimpiarTodo() {
@@ -869,7 +869,6 @@ export default {
 .animate-modal-appear {
   animation: modal-appear 0.3s ease-out forwards;
 }
-
 
 /* Breakpoint personalizado para textos en botones */
 @media (min-width: 420px) {

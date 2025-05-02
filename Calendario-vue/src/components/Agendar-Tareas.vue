@@ -1,24 +1,39 @@
 <template>
-
   <div>
+
     <!-- Overlay modal que cubre toda la pantalla cuando está activo -->
     <div
-        v-if="mostrarModal"
+      v-if="mostrarModal"
       class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300"
       :class="{ 'opacity-100': mostrarModal, 'opacity-0': !mostrarModal }"
       @click.self="cerrarModal"
     >
       <!-- Contenedor del modal -->
-      <div class="bg-white rounded-lg shadow-xl transform"
-      :class="{ 'animate-modal-appear': mostrarModal }">
+      <div
+        class="bg-white rounded-lg shadow-xl transform"
+        :class="{ 'animate-modal-appear': mostrarModal }"
+      >
         <!-- Cabecera del modal -->
-        <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-4 flex justify-between items-center">
+        <div
+          class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-4 flex justify-between items-center"
+        >
           <h3 class="text-lg font-bold">
-            {{ eventoEditar ? 'Editar tarea' : 'Agendar tarea' }}: {{ fechaFormateada }}
+            {{ eventoEditar ? "Editar tarea" : "Agendar tarea" }}: {{ fechaFormateada }}
           </h3>
           <button @click="cerrarModal" class="text-white hover:text-gray-200 focus:outline-none">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -26,22 +41,12 @@
         <!-- Cuerpo del modal -->
         <div class="p-6">
           <form @submit.prevent="guardarEvento">
-            <!-- Campo para título del evento -->
-            <div class="mb-4">
-              <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">Título del evento</label>
-              <input
-                type="text"
-                id="titulo"
-                v-model="nuevoEvento.titulo"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Escribe un título para este evento"
-                required
-              />
-            </div>
 
             <!-- Selector de categoría -->
             <div class="mb-4">
-              <label for="categoria" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+              <label for="categoria" class="block text-sm font-medium text-gray-700 mb-1"
+                >Categoría</label
+              >
               <div class="relative">
                 <select
                   id="categoria"
@@ -56,21 +61,51 @@
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                   <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    ></path>
                   </svg>
                 </div>
               </div>
             </div>
 
-            <!-- Indicador de color según la categoría seleccionada -->
-            <div v-if="nuevoEvento.categoria" class="mb-4 flex items-center">
-              <div class="w-4 h-4 rounded-full mr-2" :style="{ backgroundColor: obtenerColorCategoria(nuevoEvento.categoria) }"></div>
-              <span class="text-sm text-gray-600">Color asignado a la categoría</span>
-            </div>
+            <!-- Selector de usuario -->
+            <!-- <div class="mb-4">
+              <label for="categoria" class="block text-sm font-medium text-gray-700 mb-1"
+                >Asignar a:</label
+              >
+              <div class="relative">
+                <select
+                  id="usuario"
+                  v-model="RegistroUsuario.usuario"
+                  class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                  required
+                >
+                  <option disabled value="">Selecciona a un usuario</option>
+                  <option v-for="user in usuarios" :key="user.id" :value="nombre">
+                    {{ cat.nombre }}
+                  </option>
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fill-rule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      clip-rule="evenodd"
+                    ></path>
+                  </svg>
+                </div>
+              </div>
+            </div> -->
+
 
             <!-- Campo para descripción o notas -->
             <div class="mb-4">
-              <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
+              <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1"
+                >Descripción (opcional)</label
+              >
               <textarea
                 id="descripcion"
                 v-model="nuevoEvento.descripcion"
@@ -82,7 +117,9 @@
 
             <!-- Hora del evento (opcional) -->
             <div class="mb-4">
-              <label for="hora" class="block text-sm font-medium text-gray-700 mb-1">Hora (opcional)</label>
+              <label for="hora" class="block text-sm font-medium text-gray-700 mb-1"
+                >Hora (opcional)</label
+              >
               <input
                 type="time"
                 id="hora"
@@ -104,7 +141,7 @@
                 type="submit"
                 class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                {{ eventoEditar ? 'Actualizar' : 'Guardar' }} evento
+                {{ eventoEditar ? "Actualizar" : "Guardar" }} evento
               </button>
             </div>
           </form>
@@ -116,63 +153,64 @@
 
 <script>
 export default {
-  name: 'AgendarTareas',
+  name: "AgendarTareas",
+
   props: {
     mostrarModal: {
       type: Boolean,
-      default: false
+      default: false,
     },
     fechaSeleccionada: {
       type: Date,
-      default: null
+      default: null,
     },
     eventoEditar: {
       type: Object,
-      default: null
+      default: null,
     },
     categorias: {
       type: Array,
       default: () => [
-        { nombre: 'Trabajo', valor: 'trabajo', color: '#4299e1' },
-        { nombre: 'Personal', valor: 'personal', color: '#48bb78' },
-        { nombre: 'Importante', valor: 'importante', color: '#fc2f2c' },
-        { nombre: 'Basura', valor: 'basura', color: '#8a4e03' },
-        { nombre: 'Cumpleaños', valor: 'cumpleaños', color:'#e64e81' },
-        { nombre: 'Otro', valor: 'otro', color: '#9f7aea' },
-      ]
-    }
+        { nombre: "Trabajo", valor: "trabajo", color: "#4299e1" },
+        { nombre: "Personal", valor: "personal", color: "#48bb78" },
+        { nombre: "Importante", valor: "importante", color: "#fc2f2c" },
+        { nombre: "Basura", valor: "basura", color: "#8a4e03" },
+        { nombre: "Cumpleaños", valor: "cumpleaños", color: "#e64e81" },
+        { nombre: "Otro", valor: "otro", color: "#9f7aea" },
+      ],
+    },
   },
   data() {
     return {
       nuevoEvento: {
-        titulo: '',
-        categoria: '',
-        descripcion: '',
-        hora: ''
-      }
+        titulo: "",
+        categoria: "",
+        descripcion: "",
+        hora: "",
+      },
     };
   },
   computed: {
     fechaFormateada() {
-      if (!this.fechaSeleccionada) return '';
+      if (!this.fechaSeleccionada) return "";
 
-      return this.fechaSeleccionada.toLocaleDateString('es-ES', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+      return this.fechaSeleccionada.toLocaleDateString("es-ES", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
-    }
+    },
   },
   watch: {
     // Observar cambios en eventoEditar para cargar datos cuando se edita
     eventoEditar(evento) {
       if (evento) {
         this.nuevoEvento = {
-          titulo: evento.titulo || '',
-          categoria: evento.categoria || '',
-          descripcion: evento.descripcion || '',
-          hora: evento.hora || ''
+          titulo: evento.titulo || "",
+          categoria: evento.categoria || "",
+          descripcion: evento.descripcion || "",
+          hora: evento.hora || "",
         };
       }
     },
@@ -190,15 +228,15 @@ export default {
         // Si se abre el modal y no estamos editando, limpiar el formulario
         this.limpiarFormulario();
       }
-    }
+    },
   },
   methods: {
     cerrarModal() {
-      this.$emit('cerrar');
+      this.$emit("cerrar");
     },
     obtenerColorCategoria(categoriaValor) {
-      const categoria = this.categorias.find(cat => cat.valor === categoriaValor);
-      return categoria ? categoria.color : '#999999';
+      const categoria = this.categorias.find((cat) => cat.valor === categoriaValor);
+      return categoria ? categoria.color : "#999999";
     },
     guardarEvento() {
       let evento;
@@ -211,7 +249,7 @@ export default {
           categoria: this.nuevoEvento.categoria,
           descripcion: this.nuevoEvento.descripcion,
           hora: this.nuevoEvento.hora,
-          color: this.obtenerColorCategoria(this.nuevoEvento.categoria)
+          color: this.obtenerColorCategoria(this.nuevoEvento.categoria),
         };
       } else {
         // Crear nuevo evento
@@ -219,21 +257,21 @@ export default {
           ...this.nuevoEvento,
           fecha: new Date(this.fechaSeleccionada),
           id: Date.now() + Math.random().toString(36).substring(2, 9), // ID único más seguro
-          color: this.obtenerColorCategoria(this.nuevoEvento.categoria)
+          color: this.obtenerColorCategoria(this.nuevoEvento.categoria),
         };
       }
 
-      this.$emit('guardar-evento', evento);
+      this.$emit("guardar-evento", evento);
     },
     limpiarFormulario() {
       this.nuevoEvento = {
-        titulo: '',
-        categoria: '',
-        descripcion: '',
-        hora: ''
+        titulo: "",
+        categoria: "",
+        descripcion: "",
+        hora: "",
       };
-    }
-  }
+    },
+  },
 };
 </script>
 
