@@ -98,7 +98,8 @@
 </template>
 
 <script>
-import {loginUsuario} from '../servicios/authService';
+import Auth from '@/models/authService';
+const _auth = new Auth()
 
 export default {
   name: 'login',
@@ -139,7 +140,7 @@ export default {
       if (!this.validarFormulario()) return;
 
       try {
-        const response = await loginUsuario(this.Usuario.email, this.Usuario.password); // ✅ aquí se pasan los datos
+        const response = await _auth.loginUsuario(this.Usuario.email, this.Usuario.password); // ✅ aquí se pasan los datos
         console.log('Login exitoso', response);
         // Guarda usuario en localStorage o en un store si lo usas
        localStorage.setItem('usuario', JSON.stringify(response.usuario));

@@ -1,6 +1,6 @@
 <script>
-import { getAllOficinas } from '../servicios/oficinaService';
-import { createUser } from '../servicios/userService';
+import { getAllOficinas } from '../models/oficinaService';
+import { createUser } from '../models/userService';
 
 export default {
   data() {
