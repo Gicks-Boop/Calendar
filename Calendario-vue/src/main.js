@@ -1,6 +1,9 @@
 import './assets/main.css'
 
 import { createApp } from 'vue'
-import App from './App.vue'
+import CalendarioView from './Views/CalendarioView.vue'
+import router from './router'
 
-createApp(App).mount('#app')
+createApp(CalendarioView).use(router).mount('#app')
+    
+    
