@@ -1,7 +1,8 @@
 <script>
-import { getAllOficinas } from '../models/oficinaService';
-import { createUser } from '../models/userService';
-
+import Oficina  from '@/models/oficinaService';
+const oficinas = new  Oficina()
+import  User  from '@/models/userService';
+const user = new  User()
 export default {
   data() {
     return {
@@ -21,7 +22,7 @@ export default {
     // Cargar oficinas desde el backend
     async cargarOficinas() {
       try {
-        this.oficinas = await getAllOficinas();
+        this.oficinas = await oficinas.getAllOficinas();
       } catch (error) {
     console.error('Error al cargar oficinas:', error); // ✅ Manejo del error
     this.error = error.message || 'No se pudieron cargar las oficinas.';
@@ -68,7 +69,7 @@ export default {
       if (!this.validarFormulario()) return;
 
       try {
-        await createUser(this.usuario);
+        await user.createUser(this.usuario);
         this.exito = "Usuario registrado correctamente.";
         this.error = null;
 
