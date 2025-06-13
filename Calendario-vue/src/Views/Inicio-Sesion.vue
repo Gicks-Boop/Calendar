@@ -85,7 +85,7 @@
               </button>
             </div>
           </form>
-           <!-- Link a registro -->
+          <!-- Link a registro -->
           <div class="mt-4 text-center">
             <p class="text-sm text-gray-600">¿No tienes una cuenta?
               <router-link to="/registro" class="text-blue-600 hover:underline">Regístrate aquí</router-link>
@@ -140,12 +140,10 @@ export default {
       if (!this.validarFormulario()) return;
 
       try {
-        const response = await _auth.loginUsuario(this.Usuario.email, this.Usuario.password); // ✅ aquí se pasan los datos
-        console.log('Login exitoso', response);
-        // Guarda usuario en localStorage o en un store si lo usas
-       localStorage.setItem('usuario', JSON.stringify(response.usuario));
-
-       this.$router.push('/calendario');
+        const response = await _auth.loginUsuario(this.Usuario.email, this.Usuario.password); 
+        
+        this.$session.assignUser(response)
+        this.$router.push('/calendario');
 
       } catch (err) {
         this.error = err.message || 'usuario no encontrado';

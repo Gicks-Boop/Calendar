@@ -1,9 +1,20 @@
 import './assets/main.css'
+import '@/components/dialog/dialog.css'
+
+import Session from './middleware/session'
+import * as Static from './middleware/static'
+import Dialog from '@/components/dialog/dialog'
 
 import { createApp } from 'vue'
-import CalendarioView from './Views/CalendarioView.vue'
+import App from './App.vue'
 import router from './router'
 
-createApp(CalendarioView).use(router).mount('#app')
-    
-    
+const app = createApp(App)
+
+app.config.globalProperties.$static = Static
+app.config.globalProperties.$session = new Session(app)
+app.config.globalProperties.$dialog = Dialog
+
+app.use(router)
+
+app.mount('#app')

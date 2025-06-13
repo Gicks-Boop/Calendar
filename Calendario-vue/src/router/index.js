@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import CalendarioView from '../Views/CalendarioView.vue';
-import RegistroUsuario from '../Views/Registro-Usuario.vue';
-import login from '@/Views/Inicio-Sesion.vue';
+import CalendarioView from '@/views/CalendarioView.vue';
+import RegistroUsuario from '@/views/Registro-Usuario.vue';
+import login from '@/views/Inicio-Sesion.vue';
 
 const routes = [
   {path:'/', component:login},

@@ -1,0 +1,760 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&family=Open+Sans:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap');
+
+:root {
+    --bm-dialog-overlay-background-color: rgba(255, 255, 255, 0.4);
+    --bm-dialog-overlay-background-color-dark: rgba(0, 0, 0, 0.4);
+    --bm-dialog-background-color: rgba(255, 255, 255, 1);
+    --bm-dialog-background-color-dark: rgba(32, 32, 32, 1);
+    --bm-dialog-background-color-dark-secondary: rgba(43, 43, 43, 1);
+    --bm-dialog-background-color-macos: rgba(255, 255, 255, 1);
+    --bm-dialog-background-color-macos-dark: rgba(35, 36, 41, 1);
+    --bm-dialog-background-color-android: rgba(240, 240, 240, 1);
+    --bm-dialog-background-color-android-dark: rgba(33, 33, 33, 1);
+    --bm-dialog-contente-border-macos-dark: rgba(77, 76, 81, 1);
+    --bm-dialog-button-background-color-macos: rgba(91, 92, 96, 1);
+    --bm-dialog-button-background-color-android: rgba(30, 100, 210, 0.07);
+    --bm-dialog-button-background-color-android-dark: rgba(3, 218, 197, 0.07);
+    --bm-dialog-ios-background-color: rgba(240, 240, 240, 0.9);
+    --bm-dialog-ios-background-color-dark: rgba(39, 39, 39, 0.8);
+    --bm-dialog-ios-button-done-color: rgba(14, 116, 217, 1);
+    --bm-dialog-border-radius-macos: 0.5rem;
+    --bm-dialog-border-radius-android: 0.3rem;
+    --bm-dialog-ios-border-color: #C7C7C9;
+    --bm-dialog-ios-header-color: #010103;
+    --bm-dialog-ios-header-color-dark: #F8F8F8;
+    --bm-dialog-ios-body-color: #050507;
+    --bm-dialog-ios-body-color-dark: #FFFFFF;
+    --bm-dialog-ios-border-color-dark: #404040;
+    --bm-dialog-ios-border-radius: 0.5rem;
+    --bm-dialog-border-radius: 0.3rem;
+    --bm-dialog-buttons-border-radius: 4px;
+    --bm-dialog-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+@keyframes bm-dialog-overlay-transition {
+    0% {
+        opacity: 0;
+        top: 5rem;
+        right: 5rem;
+        bottom: 5rem;
+        left: 5rem;
+    }
+
+    100% {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        opacity: 1;
+    }
+}
+
+@keyframes bm-dialog-content-android {
+    0% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes bm-dialog-content-transition {
+    0% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@-webkit-keyframes spn-color {
+    100%, 0% {
+        stroke: #d62d20;
+    }
+
+    40% {
+        stroke: #0057e7;
+    }
+
+    66% {
+        stroke: #008744;
+    }
+
+    80%, 90% {
+        stroke: #ffa700;
+    }
+}
+
+@keyframes spn-color {
+    100%, 0% {
+        stroke: #d62d20;
+    }
+
+    40% {
+        stroke: #0057e7;
+    }
+
+    66% {
+        stroke: #008744;
+    }
+
+    80%, 90% {
+        stroke: #ffa700;
+    }
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@-webkit-keyframes rotate {
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1,150;
+        stroke-dashoffset: 0;
+    }
+
+    50% {
+        stroke-dasharray: 90,150;
+        stroke-dashoffset: -35;
+    }
+
+    100% {
+        stroke-dasharray: 90,150;
+        stroke-dashoffset: -124;
+    }
+}
+
+@-webkit-keyframes dash {
+    0% {
+        stroke-dasharray: 1,150;
+        stroke-dashoffset: 0;
+    }
+
+    50% {
+        stroke-dasharray: 90,150;
+        stroke-dashoffset: -35;
+    }
+
+    100% {
+        stroke-dasharray: 90,150;
+        stroke-dashoffset: -124;
+    }
+}
+
+.bm-dialog-overlay {
+    position: fixed;
+}
+
+body.bm-dialog-open .bm-dialog-overlay {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: var(--bm-dialog-overlay-background-color);
+    opacity: 1;
+    transition: all 100ms ease;
+    /*animation: bm-dialog-overlay-transition 150ms ease;*/
+    z-index: 9999999999;
+}
+
+    body.bm-dialog-open .bm-dialog-overlay.dark {
+        background-color: var(--bm-dialog-overlay-background-color-dark);
+    }
+
+.bm-dialog {
+    visibility: hidden;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999999999;
+    font-family: var(--bm-dialog-font-family);
+}
+
+.bm-dialog-open .bm-dialog {
+    visibility: visible;
+}
+
+.bm-dialog .bm-dialog-content {
+    display: block;
+    min-width: 20rem;
+    width: auto;
+    max-width: 25rem;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    background-color: var(--bm-dialog-background-color);
+    border-radius: var(--bm-dialog-border-radius);
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.3);
+    animation: bm-dialog-content-transition 150ms ease;
+}
+
+.bm-dialog.android .bm-dialog-content {
+    animation: bm-dialog-content-android 150ms ease;
+}
+
+.bm-dialog .bm-dialog-header {
+    display: block;
+    font-weight: bold;
+    padding: 0.5rem 0.75rem 0 0.75rem;
+    text-rendering: optimizeLegibility;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    font-size: 1rem;
+}
+
+.bm-dialog .bm-dialog-body {
+    display: flex;
+    font-size: 0.8rem;
+    padding: 0.75rem;
+    justify-content: flex-start;
+    align-items: center;
+    text-rendering: optimizeLegibility;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bm-dialog .bm-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 0 0 var(--bm-dialog-border-radius) var(--bm-dialog-border-radius);
+}
+
+    .bm-dialog .bm-dialog-footer button {
+        text-rendering: optimizeLegibility;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-font-smoothing: antialiased;
+        width: 50%;
+        font-size: 0.8rem;
+        padding: 0.25rem;
+        background-color: #FEFEFE;
+        border: 1px solid #ECECEC;
+        border-radius: var(--bm-dialog-buttons-border-radius);
+        transition: all 100ms ease;
+        outline: none;
+        text-decoration: none;
+        margin-right: 1rem;
+    }
+
+        .bm-dialog .bm-dialog-footer button:last-child {
+            margin-right: 0 !important;
+        }
+
+        .bm-dialog .bm-dialog-footer button:hover,
+        .bm-dialog .bm-dialog-footer button:focus {
+            background-color: #FAFAFA;
+        }
+/**********
+    light theme
+    **********/
+.bm-dialog.light .bm-dialog-content {
+    color: #000 !important;
+}
+/*.bm-dialog.light .bm-dialog-footer {
+    background-color: #F6F6F6;
+}*/
+/**********
+    windows dark theme
+    **********/
+.bm-dialog.windows.dark .bm-dialog-content {
+    background-color: var(--bm-dialog-background-color-dark);
+    color: #fff;
+}
+
+.bm-dialog.windows .bm-dialog-body.nt-header {
+    padding: 1rem 0.75rem;
+}
+
+.bm-dialog.windows.dark .bm-dialog-footer {
+    background-color: var(--bm-dialog-background-color-dark-secondary);
+    color: #fff;
+}
+
+    .bm-dialog.windows.dark .bm-dialog-footer button {
+        background-color: #343434;
+        color: #fff;
+        border: none !important;
+    }
+
+        .bm-dialog.windows.dark .bm-dialog-footer button:hover,
+        .bm-dialog.windows.dark .bm-dialog-footer button:focus {
+            background-color: #393939;
+        }
+/**********
+    macos theme
+    **********/
+.bm-dialog-overlay.macos {
+    -webkit-backdrop-filter: saturate(180%) blur(5px);
+    backdrop-filter: saturate(180%) blur(5px);
+}
+
+.bm-dialog.macos .bm-dialog-header {
+    font-family: var(--bm-dialog-font-family);
+    padding: 0.75rem 1rem 0 1rem;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bm-dialog.macos .bm-dialog-content {
+    border-radius: var(--bm-dialog-border-radius-macos);
+    font-family: var(--bm-dialog-font-family);
+    background-color: var(--bm-dialog-background-color-macos);
+    -webkit-backdrop-filter: saturate(180%) blur(5px);
+    backdrop-filter: saturate(180%) blur(5px);
+    letter-spacing: -.022em;
+    min-width: 23.5rem;
+    max-width: 26.5rem;
+}
+
+.bm-dialog.macos .bm-dialog-body {
+    padding: 0.5rem 1rem;
+    -webkit-font-smoothing: antialiased;
+}
+
+.bm-dialog.macos .bm-dialog-footer {
+    padding: 0.75rem 1rem;
+    justify-content: end;
+}
+
+    .bm-dialog.macos .bm-dialog-footer button {
+        border: 1px solid rgb(0 0 0 / 9%);
+        width: auto;
+        padding: 0.15rem 1.25rem;
+        font-family: var(--bm-dialog-font-family);
+        border-radius: 5px;
+        line-height: 1.37059;
+        font-weight: 400;
+        letter-spacing: -.022em;
+        margin-right: 0.75rem;
+        font-size: 0.75rem;
+        box-shadow: 0px 1px 0px 0px rgb(0 0 0 / 10%);
+        -webkit-font-smoothing: antialiased;
+    }
+
+        .bm-dialog.macos .bm-dialog-footer button:hover,
+        .bm-dialog.macos .bm-dialog-footer button:active,
+        .bm-dialog.macos .bm-dialog-footer button:focus {
+            background-color: #f5f5f7;
+        }
+
+        .bm-dialog.macos .bm-dialog-footer button.bm-dialog-button-done {
+            background: #0879F9;
+            background: linear-gradient(#2A8FFB,#0879F9);
+            /*border: 1px solid #07c;*/
+            color: #fff;
+        }
+
+            .bm-dialog.macos .bm-dialog-footer button.bm-dialog-button-done:hover,
+            .bm-dialog.macos .bm-dialog-footer button.bm-dialog-button-done:active,
+            .bm-dialog.macos .bm-dialog-footer button.bm-dialog-button-done:focus {
+                background: #1884FF;
+                background: linear-gradient(#0070c9,#0070c9);
+            }
+
+.bm-dialog.macos.dark .bm-dialog-content {
+    background-color: var(--bm-dialog-background-color-macos-dark);
+    color: #fff;
+    border: 1px solid var(--bm-dialog-contente-border-macos-dark);
+}
+
+.bm-dialog.macos.dark .bm-dialog-footer button.bm-dialog-button-cancel {
+    background-color: var(--bm-dialog-button-background-color-macos);
+    /*border: 1px solid #3D3C3F;*/
+    color: #fff;
+}
+
+    .bm-dialog.macos.dark .bm-dialog-footer button.bm-dialog-button-cancel:hover,
+    .bm-dialog.macos.dark .bm-dialog-footer button.bm-dialog-button-cancel:active,
+    .bm-dialog.macos.dark .bm-dialog-footer button.bm-dialog-button-cancel:focus {
+        background-color: #3D3C3F;
+    }
+/**********
+    Android theme
+    **********/
+.bm-dialog.android .bm-dialog-content {
+    border-radius: var(--bm-dialog-border-radius-android);
+    background-color: var(--bm-dialog-background-color-android);
+    font-family: var(--bm-dialog-font-family);
+    font-weight: 400;
+    max-width: 22rem;
+}
+
+.bm-dialog.android .bm-dialog-header {
+    padding: 1.25rem 1.25rem 0 1.25rem;
+    color: rgba(0,0,0,.87);
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    font-size: 1.25rem;
+    line-height: 2rem;
+    font-weight: 500;
+    letter-spacing: .0125em;
+    text-decoration: inherit;
+    text-transform: inherit;
+}
+
+.bm-dialog.android .bm-dialog-body {
+    padding: 0.75rem 1.25rem 0.75rem 1.25rem;
+    color: rgba(0,0,0,.6);
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 400;
+    letter-spacing: .03125em;
+    text-decoration: inherit;
+    text-transform: inherit;
+    flex-grow: 1;
+}
+
+.bm-dialog.android .bm-dialog-footer {
+    justify-content: end;
+    padding: 0.25rem 0.5rem 0.5rem 0.5rem;
+}
+
+    .bm-dialog.android .bm-dialog-footer button {
+        background-color: transparent;
+        border: none !important;
+        width: auto;
+        padding: 0.5rem;
+        font-family: var(--bm-dialog-font-family);
+        text-transform: uppercase;
+        font-weight: 500;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-font-smoothing: antialiased;
+        font-size: .875rem;
+        color: #323232;
+        line-height: inherit;
+        margin-right: 8px;
+    }
+        /*.bm-dialog.android .bm-dialog-footer button.bm-dialog-button-done {
+    color: #719BDE;
+}*/
+        .bm-dialog.android .bm-dialog-footer button:hover,
+        .bm-dialog.android .bm-dialog-footer button:active,
+        .bm-dialog.android .bm-dialog-footer button:focus {
+            background-color: var(--bm-dialog-button-background-color-android);
+            color: #1E64D2;
+        }
+
+.bm-dialog.android.dark .bm-dialog-content {
+    background-color: var(--bm-dialog-background-color-android-dark);
+}
+
+.bm-dialog.android.dark .bm-dialog-header {
+    color: rgba(255, 255, 255, 0.87);
+}
+
+.bm-dialog.android.dark .bm-dialog-body {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.bm-dialog.android.dark .bm-dialog-footer button {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+    .bm-dialog.android.dark .bm-dialog-footer button:hover,
+    .bm-dialog.android.dark .bm-dialog-footer button:active,
+    .bm-dialog.android.dark .bm-dialog-footer button:focus {
+        background-color: var(--bm-dialog-button-background-color-android-dark);
+        color: #03DAC5;
+    }
+/**********
+spin
+**********/
+.bm-dialog .bm-dialog-loader {
+    display: inline-block;
+    position: relative;
+    width: 50px;
+    height: 50px;
+    transform: scale(0.6, 0.6);
+    -moz-transform: scale(0.6, 0.6);
+    -webkit-transform: scale(0.6, 0.6);
+}
+
+.bm-dialog.android .bm-dialog-loader {
+    left: -8px;
+}
+
+.spn-container {
+    display: block;
+    width: 50px;
+    height: 50px;
+    -webkit-animation: rotate 2s linear infinite;
+    animation: rotate 2s linear infinite;
+    z-index: 2;
+}
+
+.bm-dialog:not(.windows) .spn-container.colors .path {
+    -webkit-animation: dash 1.5s ease-in-out infinite, spn-color 6s ease infinite;
+    animation: dash 1.5s ease-in-out infinite, spn-color 6s ease infinite;
+}
+
+.bm-dialog.windows.dark .spn-container.colors .path {
+    stroke: #505D61;
+}
+
+.bm-dialog.windows.light .spn-container.colors .path {
+    stroke: #0067C0;
+}
+
+.spn-container .path {
+    stroke-dasharray: 1,150;
+    stroke-dashoffset: 0;
+    stroke: rgba(27, 154, 89, 0.7);
+    stroke-linecap: round;
+    -webkit-animation: dash 1.5s ease-in-out infinite;
+    animation: dash 1.5s ease-in-out infinite;
+}
+/**********
+iOS theme
+**********/
+.bm-dialog-overlay.ios {
+    /*-webkit-backdrop-filter: saturate(180%) blur(5px);
+    backdrop-filter: saturate(180%) blur(5px);*/
+}
+
+.bm-dialog.ios .bm-dialog-content {
+    -webkit-backdrop-filter: saturate(180%) blur(5px);
+    backdrop-filter: saturate(180%) blur(5px);
+    background-color: var(--bm-dialog-ios-background-color);
+    border-radius: var(--bm-dialog-ios-border-radius);
+    box-shadow: 0px 5px 10px rgb(0 0 0 / 10%);
+    font-family: var(--bm-dialog-font-family);
+    max-width: 20rem;
+}
+
+.bm-dialog.ios .bm-dialog-header {
+    text-align: center;
+    padding: 1rem 0.75rem 0 0.75rem;
+    color: var(--bm-dialog-ios-header-color);
+    font-family: var(--bm-dialog-font-family);
+    font-size: 0.9rem;
+}
+
+.bm-dialog.ios .bm-dialog-body {
+    color: var(--bm-dialog-ios-body-color);
+    text-align: center;
+    padding: 0 0.75rem 0.75rem 0.75rem;
+    font-size: 0.9rem;
+    justify-content: center;
+    font-family: var(--bm-dialog-font-family);
+}
+
+.bm-dialog.ios .bm-dialog-footer {
+    border-top: 1px solid var(--bm-dialog-ios-border-color);
+    text-align: center;
+    padding: 0;
+    overflow: hidden;
+    justify-content: center;
+}
+
+    .bm-dialog.ios .bm-dialog-footer button {
+        margin: 0;
+        background: rgba(255, 255, 255, 0);
+        border: none;
+        padding: 0.5rem 0.25rem;
+        color: var(--bm-dialog-ios-body-color);
+        font-family: var(--bm-dialog-font-family);
+        font-weight: 500;
+    }
+
+        .bm-dialog.ios .bm-dialog-footer button:first-child,
+        .bm-dialog.ios .bm-dialog-footer button:first-child:hover,
+        .bm-dialog.ios .bm-dialog-footer button:first-child:focus,
+        .bm-dialog.ios .bm-dialog-footer button:first-child:active {
+            border-radius: 0 0 0 var(--bm-dialog-buttons-border-radius) !important;
+            border-right: 1px solid var(--bm-dialog-ios-border-color) !important;
+        }
+
+.bm-dialog.ios.dark .bm-dialog-content {
+    background-color: var(--bm-dialog-ios-background-color-dark);
+}
+
+.bm-dialog.ios.dark .bm-dialog-header {
+    color: var(--bm-dialog-ios-header-color-dark);
+}
+
+.bm-dialog.ios.dark .bm-dialog-body {
+    color: var(--bm-dialog-ios-body-color-dark);
+}
+
+.bm-dialog.ios .bm-dialog-body {
+    justify-content: flex-start;
+}
+
+.bm-dialog.ios.dark .bm-dialog-footer button {
+    color: var(--bm-dialog-ios-body-color-dark);
+}
+
+.bm-dialog.ios.dark .bm-dialog-footer {
+    border-top: 1px solid var(--bm-dialog-ios-border-color-dark);
+}
+
+    .bm-dialog.ios.dark .bm-dialog-footer button:first-child,
+    .bm-dialog.ios.dark .bm-dialog-footer button:first-child:hover,
+    .bm-dialog.ios.dark .bm-dialog-footer button:first-child:focus,
+    .bm-dialog.ios.dark .bm-dialog-footer button:first-child:active {
+        border-right: 1px solid var(--bm-dialog-ios-border-color-dark) !important;
+    }
+
+.bm-dialog.ios .bm-dialog-footer button:last-child,
+.bm-dialog.ios .bm-dialog-footer button:last-child:hover,
+.bm-dialog.ios .bm-dialog-footer button:last-child:focus,
+.bm-dialog.ios .bm-dialog-footer button:last-child:active {
+    border-left: 1px solid transparent !important;
+    border-right: none !important;
+    border-radius: 0 0 var(--bm-dialog-buttons-border-radius) 0 !important;
+}
+
+.bm-dialog.ios.dark .bm-dialog-footer:not(.question) button:first-child,
+.bm-dialog.ios.dark .bm-dialog-footer:not(.question) button:first-child:hover,
+.bm-dialog.ios.dark .bm-dialog-footer:not(.question) button:first-child:focus,
+.bm-dialog.ios.dark .bm-dialog-footer:not(.question) button:first-child:active {
+    border-right: none !important;
+}
+
+.bm-dialog.ios .bm-dialog-footer button.bm-dialog-button-done,
+.bm-dialog.ios.dark .bm-dialog-footer button.bm-dialog-button-done {
+    color: var(--bm-dialog-ios-button-done-color);
+}
+
+.bm-dialog.ios .bm-dialog-body.nt-header {
+    padding: 1rem 0.75rem 0.75rem 0.75rem;
+}
+
+.bm-dialog-ios-activity-indicator {
+    display: inline-block;
+    position: relative;
+    width: 50px;
+    height: 50px;
+    /*margin-right: 1rem;*/
+}
+
+    .bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item {
+        width: 6%;
+        height: 16%;
+        background: #fff;
+        position: absolute;
+        left: 49%;
+        top: 43%;
+        opacity: 0;
+        border-radius: 50px;
+        box-shadow: 0 0 3px rgba(0,0,0,0.2);
+        animation: fade 1s linear infinite;
+    }
+
+.bm-dialog.light .bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item {
+    background: #444;
+    box-shadow: 0 0 3px rgba(0, 0, 0, .05);
+}
+
+@keyframes fade {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0.25;
+    }
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar1 {
+    transform: rotate(0deg) translate(0, -130%);
+    animation-delay: 0s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar2 {
+    transform: rotate(30deg) translate(0, -130%);
+    animation-delay: -0.9167s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar3 {
+    transform: rotate(60deg) translate(0, -130%);
+    animation-delay: -0.833s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar4 {
+    transform: rotate(90deg) translate(0, -130%);
+    animation-delay: -0.7497s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar5 {
+    transform: rotate(120deg) translate(0, -130%);
+    animation-delay: -0.667s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar6 {
+    transform: rotate(150deg) translate(0, -130%);
+    animation-delay: -0.5837s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar7 {
+    transform: rotate(180deg) translate(0, -130%);
+    animation-delay: -0.5s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar8 {
+    transform: rotate(210deg) translate(0, -130%);
+    animation-delay: -0.4167s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar9 {
+    transform: rotate(240deg) translate(0, -130%);
+    animation-delay: -0.333s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar10 {
+    transform: rotate(270deg) translate(0, -130%);
+    animation-delay: -0.2497s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar11 {
+    transform: rotate(300deg) translate(0, -130%);
+    animation-delay: -0.167s;
+}
+
+.bm-dialog-ios-activity-indicator .bm-dialog-ios-activity-indicator-spin-item.bar12 {
+    transform: rotate(330deg) translate(0, -130%);
+    animation-delay: -0.0833s;
+}
+
+.bm-dialog-content.activity-mode {
+    min-width: 17.5rem !important;
+    max-width: 17.5rem !important;
+}
+
+    .bm-dialog-content.activity-mode .bm-dialog-body {
+        justify-content: center;
+        flex-direction: row;
+        flex-wrap: wrap;
+        text-align: center;
+        padding: 1rem;
+    }
+
+.bm-dialog-focus {
+    animation: bmDialogFocus 150ms ease !important;
+}
+
+@keyframes bmDialogFocus {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}

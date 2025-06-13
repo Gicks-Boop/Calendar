@@ -1,6 +1,6 @@
 <template>
   <div>
-     <router-view />
+     
      <!-- Mostrar login si no está autenticado -->
     <login v-if="!usuarioAutenticado" @login-exitoso="manejarLoginExitoso" /> 
 
@@ -32,10 +32,10 @@
 </template>
 
 <script>
-import CalendarioMain from "../components/Calendario-main.vue";
-import SacarBasura from "../components/SacarBasura.vue";
-import RuletteBar from "../components/RuletteBar.vue";
-import login from "../Views/Inicio-Sesion.vue";
+import CalendarioMain from "@/components/Calendario-main.vue";
+import SacarBasura from "@/components/SacarBasura.vue";
+import RuletteBar from "@/components/RuletteBar.vue";
+import login from "@/views/Inicio-Sesion.vue";
 
 export default {
   name: "App",
