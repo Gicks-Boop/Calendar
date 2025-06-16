@@ -71,36 +71,6 @@
               </div>
             </div>
 
-            <!-- Selector de usuario -->
-            <!-- <div class="mb-4">
-              <label for="categoria" class="block text-sm font-medium text-gray-700 mb-1"
-                >Asignar a:</label
-              >
-              <div class="relative">
-                <select
-                  id="usuario"
-                  v-model="RegistroUsuario.usuario"
-                  class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
-                  required
-                >
-                  <option disabled value="">Selecciona a un usuario</option>
-                  <option v-for="user in usuarios" :key="user.id" :value="nombre">
-                    {{ cat.nombre }}
-                  </option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                </div>
-              </div>
-            </div> -->
-
-
             <!-- Campo para descripción o notas -->
             <div class="mb-4">
               <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1"
@@ -155,7 +125,7 @@
 export default {
   name: "AgendarTareas",
 
-  props: {
+   props: {
     mostrarModal: {
       type: Boolean,
       default: false,

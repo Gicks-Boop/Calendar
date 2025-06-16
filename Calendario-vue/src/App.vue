@@ -1,9 +1,9 @@
 <template>
-  <router-view />
+   <router-view />
 </template>
 
 <script>
-import CalendarioView from '@/views/CalendarioView.vue'
+import CalendarioView from '@/Views/CalendarioView.vue'
 
 export default {
   components: { CalendarioView }

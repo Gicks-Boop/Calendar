@@ -1,11 +1,6 @@
 <template>
   <div>
-     
-     <!-- Mostrar login si no está autenticado -->
-    <login v-if="!usuarioAutenticado" @login-exitoso="manejarLoginExitoso" /> 
-
-    <!-- Mostrar calendario solo si está autenticado -->
-    <div v-else>
+    <div>
     <calendario-main     
       @cerrar-sesion="cerrarSesion"
       @asignar-basura="abrirModalBasura"
@@ -15,7 +10,6 @@
       @eliminar-tareas-mes="eliminarTareasMes"
     />
 
-    <!-- Componentes de modales -->
     <sacar-basura
       :mostrar-modal="mostrarModalBasura"
       @cerrar="cerrarModalBasura"
@@ -29,16 +23,16 @@
     />
     </div>
   </div>
-</template>
+</template> 
 
 <script>
 import CalendarioMain from "@/components/Calendario-main.vue";
 import SacarBasura from "@/components/SacarBasura.vue";
 import RuletteBar from "@/components/RuletteBar.vue";
-import login from "@/views/Inicio-Sesion.vue";
+import login from "@/Views/Inicio-Sesion.vue";
 
 export default {
-  name: "App",
+  name: "calendarioView",
 
   components: {
     CalendarioMain,
