@@ -166,9 +166,9 @@
 </template>
 
 <script>
-import AgendarTareas from "./Agendar-Tareas.vue";
-import VisualizadorTareas from "./VisualizadorTareas.vue";
-import SideBar from "./SideBar.vue";
+import AgendarTareas from "@/components/Agendar-Tareas.vue";
+import VisualizadorTareas from "@/components/VisualizadorTareas.vue";
+import SideBar from "@/components/SideBar.vue";
 
 export default {
   name: "CalendarioMain",

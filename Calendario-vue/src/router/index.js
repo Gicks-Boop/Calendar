@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import RegistroUsuario from '@/Views/Registro-Usuario.vue';
 import login from '@/Views/Inicio-Sesion.vue';
-import calendarioView from '@/Views/CalendarioView.vue'
+import CalendarioMain from '@/Views/Calendario-main.vue';
 import Session from '@/middleware/session';
 
 
@@ -15,7 +15,7 @@ path: '/',
   },
   {path:'/login', component:login},
   {path:'/registro', component:RegistroUsuario},
-  {path: '/calendario',component: calendarioView},
+  {path: '/calendario',component: CalendarioMain},
   
   
 ];

@@ -3,9 +3,9 @@
 </template>
 
 <script>
-import CalendarioView from '@/Views/CalendarioView.vue'
+import CalendarioMain from '@/Views/Calendario-main.vue';
 
 export default {
-  components: { CalendarioView }
+  components: { CalendarioMain }
 }
 </script>
