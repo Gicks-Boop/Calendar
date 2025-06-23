@@ -141,8 +141,8 @@ export default {
 
       try {
         const response = await _auth.loginUsuario(this.Usuario.email, this.Usuario.password); 
+        this.$session.assignUser(response.usuario)
         
-        this.$session.assignUser(response)
         this.$router.push('/calendario');
 
       } catch (err) {

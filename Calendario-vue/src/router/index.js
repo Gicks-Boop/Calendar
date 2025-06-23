@@ -6,6 +6,13 @@ import Session from '@/middleware/session';
 
 
 const routes = [
+    {
+path: '/',
+    redirect: () => {
+      const usuario = Session.GetSession();
+      return usuario ? '/calendario' : '/login';
+    }
+  },
   {path:'/login', component:login},
   {path:'/registro', component:RegistroUsuario},
   {path: '/calendario',component: calendarioView},

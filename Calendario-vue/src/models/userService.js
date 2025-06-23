@@ -1,4 +1,3 @@
-// src/services/User.js
 import * as Static from "../middleware/static";
 
 class User {

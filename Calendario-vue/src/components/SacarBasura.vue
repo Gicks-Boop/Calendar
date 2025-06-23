@@ -406,11 +406,11 @@ import html2pdf from "html2pdf.js";
 export default {
   name: "SacarBasura",
   props: {
-    mostrarModal: {
+     mostrarModal: {
       type: Boolean,
       default: false,
-    },
-  },
+    }, 
+  }, 
   data() {
     return {
       personas: [],
@@ -477,6 +477,8 @@ export default {
         this.$emit("cerrar");
       }
     },
+
+  
 
     mostrarConfirmacionLimpiarTodo() {
       this.mostrarModalConfirmacion = true;

@@ -30,3 +30,39 @@ export const apiServerRequest = async (endpoint, options) => {
   }
   return await fetch(endpoint, options);
 };
+
+ const getUserData = () => {
+  const userInfo = localStorage.getItem(DEFAULT_SESSION_VAR);
+  if (userInfo) {
+    return JSON.parse(userInfo);
+
+  }
+  return null;
+};
+export const BM_GET_USER_DATA = () => {
+  return getUserData();
+}; 
+
+
+export const BM_GET_SIDEBAR_DATA = () => {
+  const userData = getUserData();
+  if (!userData) {
+    return {
+      name: '',
+      lastName: '',
+      email: '',
+      fullName: '',
+      oficina: ''
+    };
+  }
+  
+  const name = userData.nombre ||  '';
+  const lastName = userData.apellido || '';
+  return {
+    name,
+    lastName,
+    email: userData.email || '',
+    fullName: `${name} ${lastName}`.trim(),
+    oficina: userData.oficina || ''
+  };
+};

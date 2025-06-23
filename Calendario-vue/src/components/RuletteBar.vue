@@ -2,9 +2,9 @@
   <div>
     <!-- Modal para la ruleta -->
     <div
-      v-if="mostrarModal"
+      v-if=" mostrarRuleta"
       class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 p-4"
-      :class="{ 'opacity-100': mostrarModal, 'opacity-0': !mostrarModal }"
+      :class="{ 'opacity-100':  mostrarRuleta, 'opacity-0': ! mostrarRuleta }"
       @click.self="cerrarModal"
       role="dialog"
       aria-labelledby="modal-title"
@@ -13,7 +13,7 @@
       <!-- Contenedor del modal -->
       <div
         class="bg-white rounded-lg shadow-xl w-full max-w-4xl transform overflow-hidden max-h-[90vh] overflow-y-auto"
-        :class="{ 'animate-modal-appear': mostrarModal }"
+        :class="{ 'animate-modal-appear':  mostrarRuleta }"
       >
         <!-- Cabecera del modal -->
         <div
@@ -461,12 +461,12 @@
 <script>
 export default {
   name: "RuletteBar",
-  props: {
-    mostrarModal: {
+   props: {
+    mostrarRuleta: {
       type: Boolean,
       default: false,
     },
-  },
+  }, 
   data() {
     return {
       personasDisponibles: [],
@@ -507,10 +507,28 @@ export default {
     this.cargarDatosGuardados();
   },
   methods: {
-    cerrarModal() {
-      console.log("RuletteBar: Emitiendo evento cerrar");
+     cerrarModal() {
+  // Aplicar animación de salida
+  const modalElement = this.$el.querySelector(".bg-white.rounded-lg.shadow-xl");
+  if (modalElement) {
+    modalElement.classList.remove("animate-modal-appear");
+    modalElement.classList.add("animate-modal-disappear");
+
+    // Aplicar fade out al backdrop
+    const backdropElement = this.$el.querySelector(".fixed.inset-0");
+    if (backdropElement) {
+      backdropElement.classList.add("opacity-0");
+    }
+
+    // Esperar a que termine la animación antes de cerrar completamente
+    setTimeout(() => {
       this.$emit("cerrar");
-    },
+    }, 200); // Duración de la animación en ms
+  } else {
+    // Si por alguna razón no se encuentra el elemento, cerrar inmediatamente
+    this.$emit("cerrar");
+  }
+},
 
     generarColoresArmonicos(cantidad) {
       const colores = [];

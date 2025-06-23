@@ -32,11 +32,13 @@ class Session {
     logOut() {
         const _confirm = new Dialog("Está seguro(a) que quiere cerrar sesión", "Confirmación de usuario", Dialog.type.question)
         _confirm.on.done = () => {
-            this.context.$cookies.remove(DEFAULT_SESSION_VAR)
+            //this.context.$cookies.remove(DEFAULT_SESSION_VAR)
             localStorage.removeItem(DEFAULT_SESSION_VAR)
             location.reload(true)
         }
         _confirm.open()
     }
+
+    
 }
 export default Session

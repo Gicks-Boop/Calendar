@@ -108,7 +108,7 @@
             v-for="evento in getEventos(dia)"
             :key="evento.id"
             class="w-1.5 h-1.5 rounded-full mb-0.5"
-            :style="{ backgroundColor: evento.color }"
+            :style="{ backgroundColor: obtenerColorEvento(evento) }"
             :title="evento.titulo"
           ></div>
         </div>
@@ -119,6 +119,7 @@
       <span class="font-medium">Hoy: </span>{{ fechaFormateada }}
     </div>
 
+    <!-- Modal de Agendar Tareas -->
     <agendar-tareas
       :mostrar-modal="mostrarModalTarea"
       :fecha-seleccionada="diaSeleccionado"
@@ -126,7 +127,41 @@
       :categorias="categorias"
       @cerrar="cerrarModalTarea"
       @guardar-evento="guardarEventoYPropagar"
+      @exito="mostrarMensajeExito"
+      @error="mostrarMensajeError"
     />
+
+    <!-- Toast/Notificaciones -->
+    <div
+      v-if="mostrarNotificacion"
+      :class="[
+        'fixed top-4 right-4 p-4 rounded-lg shadow-lg transition-all duration-300 z-50',
+        {
+          'bg-green-100 border border-green-400 text-green-700': tipoNotificacion === 'exito',
+          'bg-red-100 border border-red-400 text-red-700': tipoNotificacion === 'error',
+        }
+      ]"
+    >
+      <div class="flex items-center">
+        <svg
+          v-if="tipoNotificacion === 'exito'"
+          class="w-5 h-5 mr-2"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        <svg
+          v-if="tipoNotificacion === 'error'"
+          class="w-5 h-5 mr-2"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+        </svg>
+        <span>{{ mensajeNotificacion }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -159,13 +194,16 @@ export default {
       diasSemana: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
       mostrarModalTarea: false,
       eventoEditando: null,
-      fechaOriginalEvento: null, // Para guardar la fecha original formateada
+      fechaOriginalEvento: null,
+      // Sistema de notificaciones
+      mostrarNotificacion: false,
+      mensajeNotificacion: "",
+      tipoNotificacion: "exito", // 'exito' o 'error'
+      // Categorías actualizadas para coincidir con el backend
       categorias: [
         { nombre: "Trabajo", valor: "trabajo", color: "#4299e1" },
-        { nombre: "Personal", valor: "personal", color: "#48bb78" },
-        { nombre: "Importante", valor: "importante", color: "#fc2f2c" },
-        { nombre: "Basura", valor: "basura", color: "#8a4e03" },
         { nombre: "Cumpleaños", valor: "cumpleaños", color: "#e64e81" },
+        { nombre: "Basura", valor: "basura", color: "#8a4e03" },
         { nombre: "Otro", valor: "otro", color: "#9f7aea" },
       ],
     };
@@ -236,28 +274,22 @@ export default {
     },
   },
   methods: {
-    // Propagar el evento de cierre de sesión al componente padre
+    // Propagar eventos al componente padre
     cerrarSesion() {
       this.$emit("cerrar-sesion");
     },
 
-    // Manejar el evento de asignar basura
     handleAsignarBasura() {
       console.log("CalendarioMain: Propagando evento asignar-basura");
       this.$emit("asignar-basura");
     },
 
-    // Manejar el evento de ruleta
     handleRuleta() {
       console.log("CalendarioMain: Propagando evento ruleta");
       this.$emit("ruleta");
     },
 
-    esHoy(año, mes, dia) {
-      const hoy = new Date();
-      return año === hoy.getFullYear() && mes === hoy.getMonth() && dia === hoy.getDate();
-    },
-
+    // Métodos de navegación del calendario
     esSeleccionado(año, mes, dia) {
       if (!this.diaSeleccionado) return false;
       return (
@@ -269,7 +301,7 @@ export default {
 
     selectDay(dia) {
       this.diaSeleccionado = dia.fecha;
-      this.eventoEditando = null; // Resetear evento en edición
+      this.eventoEditando = null;
       this.$emit("dia-seleccionado", dia.fecha);
 
       // Solo mostrar modal si es un día del mes actual
@@ -294,19 +326,48 @@ export default {
       );
     },
 
+    // Métodos para manejo de eventos
     formatFecha(fecha) {
       if (!fecha) return "";
 
-      // Si fecha es string, convertir a objeto Date
-      if (typeof fecha === "string") {
-        const [año, mes, dia] = fecha.split("-");
-        fecha = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia));
+      // Manejar diferentes tipos de entrada de fecha
+      let fechaObj;
+      
+      if (fecha instanceof Date) {
+        fechaObj = fecha;
+      } else if (typeof fecha === "string") {
+        // Manejar formato ISO string del backend
+        if (fecha.includes('T')) {
+          fechaObj = new Date(fecha);
+        } else {
+          // Formato YYYY-MM-DD
+          const [año, mes, dia] = fecha.split("-");
+          fechaObj = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia));
+        }
+      } else {
+        return "";
       }
 
-      const año = fecha.getFullYear();
-      const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-      const dia = String(fecha.getDate()).padStart(2, "0");
+      // Validar que la fecha sea válida
+      if (isNaN(fechaObj.getTime())) {
+        return "";
+      }
+
+      const año = fechaObj.getFullYear();
+      const mes = String(fechaObj.getMonth() + 1).padStart(2, "0");
+      const dia = String(fechaObj.getDate()).padStart(2, "0");
       return `${año}-${mes}-${dia}`;
+    },
+
+    obtenerColorEvento(evento) {
+      // Si el evento ya tiene color, usarlo
+      if (evento.color) {
+        return evento.color;
+      }
+      
+      // Buscar color por categoría
+      const categoria = this.categorias.find(cat => cat.valor === evento.categoria);
+      return categoria ? categoria.color : "#9f7aea";
     },
 
     tieneEventos(dia) {
@@ -325,15 +386,72 @@ export default {
       return this.eventos[fechaFormateada] || [];
     },
 
+    // Métodos del modal
     cerrarModalTarea() {
       this.mostrarModalTarea = false;
       this.eventoEditando = null;
     },
 
     guardarEventoYPropagar(evento) {
-      // Propagar el evento al componente padre (App.vue)
-      this.$emit("guardar-evento", evento);
-      this.cerrarModalTarea();
+      try {
+        console.log("Evento recibido para guardar:", evento);
+        
+        // Validar que el evento tenga las propiedades necesarias
+        if (!evento || !evento.fechaInicio) {
+          throw new Error("Evento inválido recibido");
+        }
+
+        // Preparar el evento con el formato correcto
+        const eventoFormateado = {
+          ...evento,
+          // Asegurar que tenga la fecha en formato correcto para el calendario
+          fecha: this.formatFecha(evento.fechaInicio),
+          // Asegurar que tenga color
+          color: evento.color || this.obtenerColorEvento(evento)
+        };
+
+        console.log("Evento formateado:", eventoFormateado);
+
+        // Propagar al componente padre
+        this.$emit("guardar-evento", eventoFormateado);
+        
+        // Cerrar modal
+        this.cerrarModalTarea();
+        
+      } catch (error) {
+        console.error("Error al procesar evento:", error);
+        this.mostrarMensajeError("Error al procesar el evento");
+      }
+    },
+
+    editarEvento(evento) {
+      try {
+        // Crear una copia del evento para edición
+        this.eventoEditando = {
+          ...evento,
+          // Convertir fechas del backend al formato local si es necesario
+          fechaInicio: evento.fechaInicio || evento.fecha,
+          fechaFin: evento.fechaFin || evento.fecha
+        };
+
+        console.log("Editando evento:", this.eventoEditando);
+
+        // Establecer el día seleccionado basado en la fecha del evento
+        if (evento.fechaInicio) {
+          this.diaSeleccionado = new Date(evento.fechaInicio);
+        } else if (evento.fecha) {
+          // Si viene en formato string YYYY-MM-DD
+          const [año, mes, dia] = evento.fecha.split("-");
+          this.diaSeleccionado = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia));
+        }
+
+        // Mostrar el modal
+        this.mostrarModalTarea = true;
+        
+      } catch (error) {
+        console.error("Error al editar evento:", error);
+        this.mostrarMensajeError("Error al cargar el evento para edición");
+      }
     },
 
     eliminarEventoYPropagar(id, fecha) {
@@ -343,9 +461,8 @@ export default {
         return;
       }
 
-      // Sino, buscar el evento en todos los días
+      // Buscar el evento en todos los días
       let fechaEvento = "";
-
       Object.keys(this.eventos).forEach((fecha) => {
         const evento = this.eventos[fecha].find((e) => e.id === id);
         if (evento) {
@@ -358,36 +475,36 @@ export default {
       }
     },
 
-    abrirModalAgendar() {
-      this.eventoEditando = null; // Resetear para un nuevo evento
-      this.mostrarModalTarea = true;
-    },
-
-    editarEvento(evento) {
-      // Crear una copia profunda del evento para no modificar el original
-      this.eventoEditando = JSON.parse(JSON.stringify(evento));
-
-      // Si la fecha viene como string, convertir a objeto Date
-      if (typeof this.eventoEditando.fecha === "string") {
-        const [año, mes, dia] = this.eventoEditando.fecha.split("-");
-        this.eventoEditando.fecha = new Date(parseInt(año), parseInt(mes) - 1, parseInt(dia));
-      }
-
-      // Guardar la fecha original formateada para eliminar el evento original después
-      this.fechaOriginalEvento = this.formatFecha(evento.fecha);
-
-      // Mostrar el modal de edición
-      this.mostrarModalTarea = true;
-    },
-
-    // Método para manejar toasts/notificaciones
-    mostrarToast(mensaje, tipo) {
-      // Implementar si se requiere un sistema de notificaciones
-      console.log(`[${tipo}] ${mensaje}`);
-    },
     eliminarTareasMes(fechasAEliminar) {
-      // Propagar el evento al componente padre (App.vue)
       this.$emit("eliminar-tareas-mes", fechasAEliminar);
+    },
+
+    // Sistema de notificaciones
+    mostrarMensajeExito(mensaje) {
+      this.mostrarNotificacion = true;
+      this.mensajeNotificacion = mensaje;
+      this.tipoNotificacion = "exito";
+      
+      // Ocultar después de 3 segundos
+      setTimeout(() => {
+        this.mostrarNotificacion = false;
+      }, 3000);
+    },
+
+    mostrarMensajeError(mensaje) {
+      this.mostrarNotificacion = true;
+      this.mensajeNotificacion = mensaje;
+      this.tipoNotificacion = "error";
+      
+      // Ocultar después de 5 segundos
+      setTimeout(() => {
+        this.mostrarNotificacion = false;
+      }, 5000);
+    },
+
+    abrirModalAgendar() {
+      this.eventoEditando = null;
+      this.mostrarModalTarea = true;
     },
   },
 
