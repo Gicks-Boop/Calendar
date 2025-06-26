@@ -68,6 +68,36 @@ class User {
 
     return true; // o puedes retornar algún mensaje del servidor si lo deseas
   }
+
+    async getUsersFromSameOffice(usuarioId) {
+  if (!usuarioId || usuarioId <= 0) {
+    throw new Error("ID de usuario inválido");
+  }
+
+  const request = await Static.apiServerRequest(`${this.#endpoint}${usuarioId}/oficina/usuarios`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!request.ok) {
+    const errorData = await request.json().catch(() => ({}));
+    throw new Error(errorData.message || "Error al obtener usuarios de la oficina");
+  }
+
+  return request.json();
+}  
+
+ async getMyOfficeUsers() {
+  const currentUser = Static.BM_GET_USER_DATA();
+  
+  if (!currentUser || !currentUser.id) {
+    throw new Error("No hay usuario logueado o falta información del usuario");
+  }
+
+  return this.getUsersFromSameOffice(currentUser.id);
+} 
 }
 
 export default User;

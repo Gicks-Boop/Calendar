@@ -9,14 +9,17 @@
     >
       <!-- Contenedor del modal -->
       <div
-        class="bg-white rounded-lg shadow-xl w-full max-w-2xl transform overflow-y-auto max-h-[90vh]"
+        class="bg-white rounded-lg shadow-xl w-full max-w-3xl transform overflow-y-auto max-h-[90vh]"
         :class="{ 'animate-modal-appear': mostrarModal }"
       >
         <!-- Cabecera del modal -->
         <div
           class="bg-gradient-to-r from-green-500 to-teal-600 text-white px-4 sm:px-6 py-4 flex justify-between items-center rounded-t-lg sticky top-0 z-10"
         >
-          <h3 class="text-base sm:text-lg font-bold">Asignación automática de tareas de basura</h3>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold">Asignación automática de tareas de basura</h3>
+            <p class="text-sm opacity-90">{{ oficinaActual?.nombre || 'Oficina actual' }}</p>
+          </div>
           <button @click="cerrarModal" class="text-white hover:text-gray-200 focus:outline-none">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -40,9 +43,8 @@
           <!-- Explicación -->
           <div class="mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
             <p class="text-gray-700 text-xs sm:text-sm">
-              Esta herramienta asignará automáticamente la tarea de sacar la basura entre las
-              personas que agregues, de lunes a viernes. Selecciona el mes para el que deseas
-              generar la asignación.
+              Esta herramienta asignará automáticamente la tarea de sacar la basura entre los
+              usuarios de tu oficina, de lunes a viernes. Selecciona el mes y los usuarios participantes.
             </p>
           </div>
 
@@ -77,50 +79,37 @@
             </div>
           </div>
 
-          <!-- Listado de personas y formulario para agregar -->
+          <!-- Lista de usuarios de la oficina -->
           <div class="mb-6">
             <div class="flex justify-between items-center mb-3">
-              <h4 class="font-medium text-gray-700">Personas disponibles:</h4>
-
-              <!-- Botón para limpiar todo -->
-              <button
-                v-if="personas.length > 0 || asignaciones.length > 0"
-                @click="mostrarConfirmacionLimpiarTodo"
-                class="text-sm text-red-500 hover:text-red-700 flex items-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
-                </svg>
-                Limpiar todo
-              </button>
-            </div>
-
-            <!-- Lista de personas -->
-            <div v-if="personas.length > 0" class="mb-4 space-y-2">
-              <div
-                v-for="(persona, index) in personas"
-                :key="index"
-                class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm"
-              >
-                <span class="font-medium truncate max-w-[80%]">{{ persona.nombre }}</span>
+              <h4 class="font-medium text-gray-700">
+                Usuarios de la oficina ({{ usuariosOficina.length }}):
+              </h4>
+              
+              <!-- Botones de selección rápida -->
+              <div class="flex space-x-2">
                 <button
-                  @click="eliminarPersona(index)"
-                  class="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50"
+                  @click="seleccionarTodosUsuarios"
+                  class="text-sm text-blue-600 hover:text-blue-800 px-2 py-1 rounded"
+                  :disabled="cargandoUsuarios"
+                >
+                  Todos
+                </button>
+                <button
+                  @click="deseleccionarTodosUsuarios"
+                  class="text-sm text-gray-600 hover:text-gray-800 px-2 py-1 rounded"
+                  :disabled="cargandoUsuarios"
+                >
+                  Ninguno
+                </button>
+                <button
+                  v-if="usuariosSeleccionados.length > 0 || asignaciones.length > 0"
+                  @click="mostrarConfirmacionLimpiarTodo"
+                  class="text-sm text-red-500 hover:text-red-700 flex items-center px-2 py-1 rounded"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5"
+                    class="h-4 w-4 mr-1"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -132,35 +121,86 @@
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                     />
                   </svg>
+                  Limpiar
                 </button>
               </div>
             </div>
 
-            <div
-              v-else
-              class="mb-4 p-4 text-center text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300"
-            >
-              No hay personas agregadas aún
+            <!-- Loading de usuarios -->
+            <div v-if="cargandoUsuarios" class="text-center py-8">
+              <svg class="animate-spin h-8 w-8 mx-auto text-green-500 mb-2" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p class="text-gray-600">Cargando usuarios de la oficina...</p>
             </div>
 
-            <!-- Formulario para agregar persona -->
-            <div
-              class="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-2 sm:space-y-0"
-            >
-              <input
-                v-model="nuevaPersona"
-                type="text"
-                placeholder="Nombre de la persona"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                @keyup.enter="agregarPersona"
-              />
-              <button
-                @click="agregarPersona"
-                class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 sm:flex-shrink-0"
-                :disabled="!nuevaPersona.trim()"
+            <!-- Error al cargar usuarios -->
+            <div v-else-if="errorUsuarios" class="text-center py-8">
+              <svg class="h-8 w-8 mx-auto text-red-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-red-600 mb-2">Error al cargar usuarios</p>
+              <button 
+                @click="cargarUsuariosOficina"
+                class="text-sm text-blue-600 hover:text-blue-800"
               >
-                Agregar
+                Reintentar
               </button>
+            </div>
+
+            <!-- Lista de usuarios -->
+            <div v-else-if="usuariosOficina.length > 0" class="space-y-2 max-h-60 overflow-y-auto">
+              <div
+                v-for="usuario in usuariosOficina"
+                :key="usuario.id"
+                class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                :class="{
+                  'border-green-300 bg-green-50': usuariosSeleccionados.includes(usuario.id),
+                  'border-blue-300 bg-blue-50': esUsuarioActual(usuario)
+                }"
+              >
+                <div class="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    :value="usuario.id"
+                    v-model="usuariosSeleccionados"
+                    class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  />
+                  <div class="flex-1">
+                    <div class="flex items-center space-x-2">
+                      <span class="font-medium text-gray-900">
+                        {{ usuario.nombre }} {{ usuario.apellido }}
+                      </span>
+                      <span v-if="esUsuarioActual(usuario)" class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        Tú
+                      </span>
+                    </div>
+                    <p v-if="usuario.email" class="text-sm text-gray-500">{{ usuario.email }}</p>
+                  </div>
+                </div>
+                
+                <!-- Indicador de color asignado -->
+                <div 
+                  v-if="usuariosSeleccionados.includes(usuario.id)"
+                  class="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                  :style="{ backgroundColor: obtenerColorUsuario(usuario.id) }"
+                  :title="`Color asignado: ${obtenerColorUsuario(usuario.id)}`"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Sin usuarios -->
+            <div v-else class="text-center py-8 text-gray-500">
+              <svg class="h-8 w-8 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <p>No se encontraron usuarios en la oficina</p>
+            </div>
+
+            <!-- Contador de usuarios seleccionados -->
+            <div v-if="usuariosSeleccionados.length > 0" class="mt-3 text-sm text-gray-600 bg-green-50 p-2 rounded">
+              <span class="font-medium">{{ usuariosSeleccionados.length }}</span> usuario(s) seleccionado(s) para participar
             </div>
           </div>
 
@@ -197,65 +237,49 @@
                 <table class="min-w-full divide-y divide-gray-200">
                   <thead class="bg-gray-50">
                     <tr>
-                      <th
-                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
+                      <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Fecha
                       </th>
-                      <th
-                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
+                      <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Día
                       </th>
-                      <th
-                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                      >
-                        Persona asignada
+                      <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Usuario asignado
                       </th>
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
-                    <tr
-                      v-for="(asignacion, index) in asignaciones"
-                      :key="index"
-                      class="hover:bg-gray-50"
-                    >
-                      <td
-                        class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700"
-                      >
+                    <tr v-for="(asignacion, index) in asignaciones" :key="index" class="hover:bg-gray-50">
+                      <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700">
                         {{ formatearFecha(asignacion.fecha) }}
                       </td>
-                      <td
-                        class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700"
-                      >
+                      <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700">
                         {{ obtenerDiaSemana(asignacion.fecha) }}
                       </td>
                       <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                         <div class="relative">
-                          <!-- Select para cambiar la persona asignada -->
+                          <!-- Select para cambiar el usuario asignado -->
                           <select
-                            v-model="asignaciones[index].persona"
-                            class="appearance-none w-full text-xs sm:text-sm font-medium px-2 py-1 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500"
+                            v-model="asignaciones[index].usuarioId"
+                            @change="actualizarNombreUsuario(index)"
+                            class="appearance-none w-full text-xs sm:text-sm font-medium px-3 py-2 pr-8 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                             :style="{
-                              backgroundColor: colorPorNombre(asignacion.persona),
-                              color: 'white',
+                              backgroundColor: obtenerColorUsuario(asignacion.usuarioId) + '20',
+                              borderColor: obtenerColorUsuario(asignacion.usuarioId)
                             }"
                           >
                             <option
-                              v-for="persona in personas"
-                              :key="persona.nombre"
-                              :value="persona.nombre"
-                              :style="{ backgroundColor: colores[persona.colorIndex] }"
+                              v-for="usuarioId in usuariosSeleccionados"
+                              :key="usuarioId"
+                              :value="usuarioId"
                             >
-                              {{ persona.nombre }}
+                              {{ obtenerNombreUsuario(usuarioId) }}
                             </option>
                           </select>
                           <!-- Icono de selector -->
-                          <div
-                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2"
-                          >
+                          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
                             <svg
-                              class="h-4 w-4 text-white opacity-75"
+                              class="h-4 w-4 text-gray-400"
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 20 20"
                               fill="currentColor"
@@ -281,8 +305,8 @@
             <div class="flex flex-wrap gap-2">
               <button
                 @click="generarAsignaciones"
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                :disabled="personas.length === 0"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="usuariosSeleccionados.length === 0 || cargandoUsuarios"
               >
                 <span class="flex items-center">
                   <svg
@@ -303,13 +327,24 @@
                   <span class="xs:hidden">Generar</span>
                 </span>
               </button>
+              
               <button
                 @click="guardarAsignaciones"
-                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                :disabled="asignaciones.length === 0"
+                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="asignaciones.length === 0 || guardandoEventos"
               >
                 <span class="flex items-center">
                   <svg
+                    v-if="guardandoEventos"
+                    class="animate-spin h-5 w-5 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <svg
+                    v-else
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-5 w-5 mr-2"
                     fill="none"
@@ -323,15 +358,19 @@
                       d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
                     />
                   </svg>
-                  <span class="hidden xs:inline">Guardar en calendario</span>
-                  <span class="xs:hidden">Guardar</span>
+                  <span class="hidden xs:inline">
+                    {{ guardandoEventos ? 'Guardando...' : 'Guardar en calendario' }}
+                  </span>
+                  <span class="xs:hidden">
+                    {{ guardandoEventos ? 'Guardando...' : 'Guardar' }}
+                  </span>
                 </span>
               </button>
             </div>
 
             <button
               @click="exportarPDF"
-              class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="asignaciones.length === 0"
             >
               <span class="flex items-center">
@@ -374,7 +413,7 @@
       >
         <h3 class="text-lg font-bold text-gray-900 mb-4">Confirmar</h3>
         <p class="text-gray-600 mb-6">
-          ¿Estás seguro de que deseas eliminar todas las personas y asignaciones? Esta acción no se
+          ¿Estás seguro de que deseas eliminar todas las selecciones y asignaciones? Esta acción no se
           puede deshacer.
         </p>
         <div class="flex justify-end space-x-3">
@@ -393,131 +432,138 @@
         </div>
       </div>
     </div>
-
-    <!-- Contenedor oculto para generación de PDF -->
-    <div id="pdf-container" ref="pdfContainer" class="hidden"></div>
   </div>
 </template>
 
 <script>
-// Importar html2pdf
 import html2pdf from "html2pdf.js";
+import UserService from '@/models/userService';
+import EventoService from '@/models/eventoService';
+import * as Static from '@/middleware/static';
+
+const userService = new UserService();
+const eventoService = new EventoService();
 
 export default {
   name: "SacarBasura",
   props: {
-     mostrarModal: {
+    mostrarModal: {
       type: Boolean,
       default: false,
-    }, 
-  }, 
+    },
+  },
   data() {
     return {
-      personas: [],
-      nuevaPersona: "",
+      // Usuarios de la oficina
+      usuariosOficina: [],
+      usuariosSeleccionados: [],
+      cargandoUsuarios: false,
+      errorUsuarios: false,
+      
+      // Usuario y oficina actual
+      usuarioActual: null,
+      oficinaActual: null,
+      
+      // Asignaciones
       asignaciones: [],
+      guardandoEventos: false,
+      
+      // UI
       mostrarModalConfirmacion: false,
+      
+      // Configuración temporal
       mesSeleccionado: new Date().getMonth(),
       anioSeleccionado: new Date().getFullYear(),
       meses: [
-        "Enero",
-        "Febrero",
-        "Marzo",
-        "Abril",
-        "Mayo",
-        "Junio",
-        "Julio",
-        "Agosto",
-        "Septiembre",
-        "Octubre",
-        "Noviembre",
-        "Diciembre",
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
       ],
       colores: [
-        "#4299E1", // azul
-        "#48BB78", // verde
-        "#ED8936", // naranja
-        "#9F7AEA", // morado
-        "#F56565", // rojo
-        "#38B2AC", // teal
-        "#ED64A6", // rosa
-        "#667EEA", // indigo
-        "#F6AD55", // naranja claro
-        "#FC8181", // rojo claro
+        "#4299E1", "#48BB78", "#ED8936", "#9F7AEA", "#F56565",
+        "#38B2AC", "#ED64A6", "#667EEA", "#F6AD55", "#FC8181",
+        "#4FD1C7", "#63B3ED", "#F687B3", "#A78BFA", "#34D399"
       ],
     };
   },
   computed: {
     aniosDisponibles() {
       const currentYear = new Date().getFullYear();
-      // Generar un array con años desde el actual hasta 3 años en el futuro
       return Array.from({ length: 4 }, (_, i) => currentYear + i);
     },
   },
-  methods: {
-    cerrarModal() {
-      // Aplicar animación de salida
-      const modalElement = this.$el.querySelector(".bg-white");
-      if (modalElement) {
-        modalElement.classList.remove("animate-modal-appear");
-        modalElement.classList.add("animate-modal-disappear");
-
-        // Aplicar fade out al backdrop
-        const backdropElement = this.$el.querySelector(".fixed.inset-0");
-        if (backdropElement) {
-          backdropElement.classList.add("opacity-0");
+  watch: {
+    mostrarModal: {
+      handler(nuevo) {
+        if (nuevo) {
+          this.inicializar();
         }
+      },
+      immediate: true
+    }
+  },
+  methods: {
+    async inicializar() {
+      this.cargarUsuarioActual();
+      await this.cargarUsuariosOficina();
+    },
 
-        // Esperar a que termine la animación antes de cerrar completamente
-        setTimeout(() => {
-          this.$emit("cerrar");
-        }, 200); // Duración de la animación en ms
-      } else {
-        // Si por alguna razón no se encuentra el elemento, cerrar inmediatamente
-        this.$emit("cerrar");
+    cargarUsuarioActual() {
+      this.usuarioActual = Static.BM_GET_USER_DATA();
+      this.oficinaActual = this.usuarioActual?.oficina;
+      console.log('Usuario actual:', this.usuarioActual);
+    },
+
+    async cargarUsuariosOficina() {
+      try {
+        this.cargandoUsuarios = true;
+        this.errorUsuarios = false;
+        
+        const response = await userService.getMyOfficeUsers();
+        this.usuariosOficina = response.data || response || [];
+        
+        console.log('Usuarios de oficina cargados:', this.usuariosOficina);
+        
+        // Auto-seleccionar al usuario actual
+        if (this.usuarioActual && this.usuariosOficina.length > 0) {
+          const usuarioActualEnLista = this.usuariosOficina.find(u => u.id === this.usuarioActual.id);
+          if (usuarioActualEnLista && !this.usuariosSeleccionados.includes(this.usuarioActual.id)) {
+            this.usuariosSeleccionados.push(this.usuarioActual.id);
+          }
+        }
+        
+      } catch (error) {
+        console.error('Error al cargar usuarios de oficina:', error);
+        this.errorUsuarios = true;
+        this.usuariosOficina = [];
+      } finally {
+        this.cargandoUsuarios = false;
       }
     },
 
-  
-
-    mostrarConfirmacionLimpiarTodo() {
-      this.mostrarModalConfirmacion = true;
+    esUsuarioActual(usuario) {
+      return this.usuarioActual && this.usuarioActual.id === usuario.id;
     },
 
-    cerrarModalConfirmacion() {
-      this.mostrarModalConfirmacion = false;
+    seleccionarTodosUsuarios() {
+      this.usuariosSeleccionados = this.usuariosOficina.map(u => u.id);
     },
 
-    limpiarTodo() {
-      this.personas = [];
-      this.asignaciones = [];
-      this.mostrarModalConfirmacion = false;
+    deseleccionarTodosUsuarios() {
+      this.usuariosSeleccionados = [];
     },
 
-    limpiarAsignaciones() {
-      this.asignaciones = [];
+    obtenerNombreUsuario(usuarioId) {
+      const usuario = this.usuariosOficina.find(u => u.id === usuarioId);
+      return usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Usuario no encontrado';
     },
 
-    agregarPersona() {
-      if (this.nuevaPersona.trim()) {
-        this.personas.push({
-          nombre: this.nuevaPersona.trim(),
-          colorIndex: this.personas.length % this.colores.length,
-        });
-        this.nuevaPersona = "";
-      }
-    },
-
-    eliminarPersona(index) {
-      this.personas.splice(index, 1);
-      // Actualizar índices de colores
-      this.personas.forEach((persona, i) => {
-        persona.colorIndex = i % this.colores.length;
-      });
+    obtenerColorUsuario(usuarioId) {
+      const index = this.usuariosSeleccionados.indexOf(usuarioId);
+      return this.colores[index % this.colores.length];
     },
 
     generarAsignaciones() {
-      if (this.personas.length === 0) return;
+      if (this.usuariosSeleccionados.length === 0) return;
 
       // Obtener días de lunes a viernes del mes seleccionado
       const asignaciones = [];
@@ -527,59 +573,96 @@ export default {
 
       for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
         const fecha = new Date(anio, mes, dia);
-        const diaSemana = fecha.getDay(); // 0 es domingo, 1 es lunes, ..., 6 es sábado
+        const diaSemana = fecha.getDay();
 
         // Solo incluir de lunes a viernes (1-5)
         if (diaSemana >= 1 && diaSemana <= 5) {
           asignaciones.push({
             fecha: fecha,
-            persona: null,
+            usuarioId: null,
+            nombreUsuario: null
           });
         }
       }
 
-      // Asignar personas aleatoriamente pero de forma equilibrada
-      const nombrePersonas = this.personas.map((p) => p.nombre);
-      let personasPorAsignar = [...nombrePersonas];
+      // Asignar usuarios aleatoriamente pero de forma equilibrada
+      const usuariosDisponibles = [...this.usuariosSeleccionados];
+      let usuariosPorAsignar = [...usuariosDisponibles];
 
       for (let i = 0; i < asignaciones.length; i++) {
-        // Si se acabaron las personas, reiniciar el array
-        if (personasPorAsignar.length === 0) {
-          personasPorAsignar = [...nombrePersonas];
+        // Si se acabaron los usuarios, reiniciar el array
+        if (usuariosPorAsignar.length === 0) {
+          usuariosPorAsignar = [...usuariosDisponibles];
         }
 
-        // Seleccionar persona aleatoria del grupo disponible
-        const indiceAleatorio = Math.floor(Math.random() * personasPorAsignar.length);
-        asignaciones[i].persona = personasPorAsignar[indiceAleatorio];
+        // Seleccionar usuario aleatorio del grupo disponible
+        const indiceAleatorio = Math.floor(Math.random() * usuariosPorAsignar.length);
+        const usuarioId = usuariosPorAsignar[indiceAleatorio];
+        
+        asignaciones[i].usuarioId = usuarioId;
+        asignaciones[i].nombreUsuario = this.obtenerNombreUsuario(usuarioId);
 
-        // Quitar esa persona de la lista temporal
-        personasPorAsignar.splice(indiceAleatorio, 1);
+        // Quitar ese usuario de la lista temporal
+        usuariosPorAsignar.splice(indiceAleatorio, 1);
       }
 
       this.asignaciones = asignaciones;
     },
 
-    guardarAsignaciones() {
+    actualizarNombreUsuario(index) {
+      if (this.asignaciones[index]) {
+        this.asignaciones[index].nombreUsuario = this.obtenerNombreUsuario(this.asignaciones[index].usuarioId);
+      }
+    },
+
+    async guardarAsignaciones() {
       if (this.asignaciones.length === 0) return;
 
-      // Crear eventos para cada asignación
-      const eventos = this.asignaciones.map((asignacion) => {
-        return {
-          titulo: `Sacar basura: ${asignacion.persona}`,
-          fecha: new Date(asignacion.fecha), // Asegurarnos de que es un objeto Date
-          categoria: "basura",
-          descripcion: `Tarea asignada automáticamente a ${asignacion.persona}`,
-          hora: "18:00",
-          id: Date.now() + Math.random().toString(36).substring(2, 9), // ID único
-          color: "#8a4e03", // Color gris fijo para las tareas de basura
-        };
-      });
+      try {
+        this.guardandoEventos = true;
+        
+        // Crear eventos para cada asignación
+        const eventosCreados = [];
+        
+        for (const asignacion of this.asignaciones) {
+          const eventoData = {
+            titulo: `Sacar basura`,
+            descripcion: `Tarea asignada a ${asignacion.nombreUsuario}`,
+            categoria: 'basura',
+            fechaInicio: new Date(asignacion.fecha.getFullYear(), asignacion.fecha.getMonth(), asignacion.fecha.getDate(), 18, 0).toISOString(),
+            fechaFin: new Date(asignacion.fecha.getFullYear(), asignacion.fecha.getMonth(), asignacion.fecha.getDate(), 18, 30).toISOString(),
+            usuariosAsignadosIds: [asignacion.usuarioId]
+          };
 
-      console.log("SacarBasura: Emitiendo guardar-asignaciones con", eventos.length, "eventos");
+          try {
+            const eventoCreado = await eventoService.createEventoForCurrentUser(eventoData);
+            eventosCreados.push(eventoCreado);
+          } catch (error) {
+            console.error(`Error al crear evento para ${asignacion.nombreUsuario}:`, error);
+          }
+        }
 
-      // Emitir evento para guardar en el calendario principal
-      this.$emit("guardar-asignaciones", eventos);
-      this.cerrarModal();
+        console.log(`SacarBasura: ${eventosCreados.length} eventos creados exitosamente`);
+        
+        // Emitir evento para notificar al componente padre
+        this.$emit("guardar-asignaciones", {
+          eventosCreados: eventosCreados.length,
+          totalAsignaciones: this.asignaciones.length,
+          mes: this.meses[this.mesSeleccionado],
+          anio: this.anioSeleccionado
+        });
+
+        // Mostrar mensaje de éxito
+        this.$emit("mostrar-exito", `Se crearon ${eventosCreados.length} eventos de basura para ${this.meses[this.mesSeleccionado]} ${this.anioSeleccionado}`);
+        
+        this.cerrarModal();
+        
+      } catch (error) {
+        console.error('Error al guardar asignaciones:', error);
+        this.$emit("mostrar-error", "Error al guardar las asignaciones en el calendario");
+      } finally {
+        this.guardandoEventos = false;
+      }
     },
 
     exportarPDF() {
@@ -594,7 +677,6 @@ export default {
         element.style.fontFamily = "Arial, sans-serif";
         element.style.padding = "15px";
 
-        // Preparar datos del mes y año
         const anio = this.anioSeleccionado;
         const mes = this.mesSeleccionado;
         const nombreMes = this.meses[mes];
@@ -603,91 +685,84 @@ export default {
         const asignacionesPorDia = {};
         this.asignaciones.forEach((asignacion) => {
           const dia = asignacion.fecha.getDate();
-          asignacionesPorDia[dia] = asignacion.persona;
+          asignacionesPorDia[dia] = {
+            nombreUsuario: asignacion.nombreUsuario,
+            color: this.obtenerColorUsuario(asignacion.usuarioId)
+          };
         });
 
-        // Días de la semana en formato corto
         const diasSemanaCortos = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
         // Añadir título
         element.innerHTML = `
-      <div style="text-align: center; margin-bottom: 15px;">
-        <h1 style="font-size: 22px; margin: 0; color: #1a56db;">${nombreMes.toUpperCase()} ${anio}</h1>
-      </div>
-    `;
+          <div style="text-align: center; margin-bottom: 15px;">
+            <h1 style="font-size: 22px; margin: 0; color: #1a56db;">${nombreMes.toUpperCase()} ${anio}</h1>
+            <p style="font-size: 14px; margin: 5px 0; color: #666;">Asignación de tareas de basura - ${this.oficinaActual?.nombre || 'Oficina'}</p>
+          </div>
+        `;
 
         // Crear la estructura del calendario
         let tablaHTML = `
-      <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-        <thead style="background-color: #4169E1;">
-          <tr>
-            ${diasSemanaCortos
-              .map(
-                (dia) =>
-                  `<th style="padding: 8px; color: white; text-align: center; border: 1px solid #ccc;">${dia}</th>`
-              )
-              .join("")}
-          </tr>
-        </thead>
-        <tbody>
-    `;
+          <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+            <thead style="background-color: #4169E1;">
+              <tr>
+                ${diasSemanaCortos
+                  .map(
+                    (dia) =>
+                      `<th style="padding: 8px; color: white; text-align: center; border: 1px solid #ccc;">${dia}</th>`
+                  )
+                  .join("")}
+              </tr>
+            </thead>
+            <tbody>
+        `;
 
-        // Determinar el primer día del mes (0 = Domingo, 1 = Lunes, etc.)
+        // Determinar el primer día del mes
         const primerDia = new Date(anio, mes, 1);
         const ultimoDia = new Date(anio, mes + 1, 0);
         const diasEnMes = ultimoDia.getDate();
-        const diaSemanaPrimerDia = primerDia.getDay(); // 0 es domingo
+        const diaSemanaPrimerDia = primerDia.getDay();
 
-        // Variables para construir el calendario
         let diaActual = 1;
 
         // Generar filas del calendario
         for (let i = 0; i < 6; i++) {
-          // Máximo 6 semanas por mes
           let filaHTML = '<tr style="height: 90px;">';
 
           for (let j = 0; j < 7; j++) {
-            // Determinar si es una celda con fecha del mes actual
             if ((i === 0 && j < diaSemanaPrimerDia) || diaActual > diasEnMes) {
-              // Celda vacía (del mes anterior o siguiente)
               filaHTML += `<td style="border: 1px solid #ddd; background-color: #f5f5f5;"></td>`;
             } else {
-              // Determinar si es el día actual
               const esDiaActual =
                 diaActual === new Date().getDate() &&
                 mes === new Date().getMonth() &&
                 anio === new Date().getFullYear();
 
-              // Determinar el día de la semana
               const fechaActual = new Date(anio, mes, diaActual);
               const diaSemana = fechaActual.getDay();
               const esLunesAViernes = diaSemana >= 1 && diaSemana <= 5;
 
-              // Determinar el color de fondo según si es día actual o día normal
-              let fondoCelda = esDiaActual ? "#ffffff" : "white";
-              let colorNumero = esDiaActual ? "white" : "#333";
+              let fondoCelda = esDiaActual ? "#e3f2fd" : "white";
+              let colorNumero = esDiaActual ? "#1976d2" : "#333";
 
-              // Obtener persona asignada para este día
-              const personaAsignada = asignacionesPorDia[diaActual];
+              const asignacion = asignacionesPorDia[diaActual];
 
-              // Contenido de la celda
               let personaHTML = "";
-              if (personaAsignada && esLunesAViernes) {
-                const colorPersona = this.colorPorNombre(personaAsignada);
+              if (asignacion && esLunesAViernes) {
                 personaHTML = `
-                  <div  style="
+                  <div style="
                     position: absolute;
                     bottom: 5px;
                     left: 0;
                     right: 0;
                     text-align: center;
                     padding: 2px 0;
-                    background-color: ${colorPersona}20; /* Color con transparencia */
-                    border-top: 1px solid ${colorPersona};
+                    background-color: ${asignacion.color}20;
+                    border-top: 2px solid ${asignacion.color};
                   ">
                     <span style="
                       font-size: 10px;
-                      color: ${colorPersona};
+                      color: ${asignacion.color};
                       font-weight: 600;
                       padding: 2px 5px;
                       border-radius: 3px;
@@ -697,7 +772,7 @@ export default {
                       overflow: hidden;
                       text-overflow: ellipsis;
                     ">
-                      ${personaAsignada}
+                      ${asignacion.nombreUsuario}
                     </span>
                   </div>
                 `;
@@ -738,44 +813,44 @@ export default {
           filaHTML += "</tr>";
           tablaHTML += filaHTML;
 
-          // Salir si ya hemos mostrado todos los días del mes
           if (diaActual > diasEnMes) break;
         }
 
         tablaHTML += `
-        </tbody>
-      </table>
-    `;
+          </tbody>
+        </table>
+        `;
 
         element.innerHTML += tablaHTML;
 
-        // Añadir leyenda con las personas
+        // Añadir leyenda con los usuarios
         let leyendaHTML = `
-      <div style="margin-top: 20px;">
-        <h3 style="font-size: 16px; color: #4169E1; margin-bottom: 8px;">Personas asignadas para sacar la basura:</h3>
-        <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-    `;
+          <div style="margin-top: 20px;">
+            <h3 style="font-size: 16px; color: #4169E1; margin-bottom: 8px;">Usuarios asignados para sacar la basura:</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
+        `;
 
-        // Añadir cada persona con su color
-        this.personas.forEach((persona) => {
-          const color = this.colores[persona.colorIndex];
+        // Añadir cada usuario seleccionado con su color
+        this.usuariosSeleccionados.forEach((usuarioId, index) => {
+          const color = this.obtenerColorUsuario(usuarioId);
+          const nombreUsuario = this.obtenerNombreUsuario(usuarioId);
           leyendaHTML += `
-        <div style="display: flex; align-items: center;">
-          <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%;
-                background-color: ${color}; margin-right: 5px;"></span>
-          <span style="font-size: 13px;">${persona.nombre}</span>
-        </div>
-      `;
+            <div style="display: flex; align-items: center;">
+              <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%;
+                    background-color: ${color}; margin-right: 5px;"></span>
+              <span style="font-size: 13px;">${nombreUsuario}</span>
+            </div>
+          `;
         });
 
         leyendaHTML += `
+          </div>
         </div>
-      </div>
 
-      <div style="margin-top: 15px; text-align: center; font-size: 11px; color: #666;">
-        Generado el ${new Date().toLocaleDateString("es-ES")}
-      </div>
-    `;
+        <div style="margin-top: 15px; text-align: center; font-size: 11px; color: #666;">
+          Generado el ${new Date().toLocaleDateString("es-ES")} - ${this.oficinaActual?.nombre || 'Oficina'}
+        </div>
+        `;
 
         element.innerHTML += leyendaHTML;
 
@@ -788,7 +863,7 @@ export default {
             scale: 2,
             useCORS: true,
             allowTaint: true,
-            logging: true,
+            logging: false,
           },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
         };
@@ -821,31 +896,41 @@ export default {
       return diasSemana[fecha.getDay()];
     },
 
-    nombreMesActual() {
-      return this.meses[this.mesSeleccionado];
+    limpiarAsignaciones() {
+      this.asignaciones = [];
     },
 
-    colorPorNombre(nombre) {
-      // Encontrar persona por nombre
-      const persona = this.personas.find((p) => p.nombre === nombre);
-      if (!persona) return this.colores[0];
-
-      return this.colores[persona.colorIndex];
+    mostrarConfirmacionLimpiarTodo() {
+      this.mostrarModalConfirmacion = true;
     },
-    intercambiarAsignacion(indice1, indice2) {
-      if (
-        indice1 >= 0 &&
-        indice1 < this.asignaciones.length &&
-        indice2 >= 0 &&
-        indice2 < this.asignaciones.length
-      ) {
-        // Guardar las personas originales
-        const persona1 = this.asignaciones[indice1].persona;
-        const persona2 = this.asignaciones[indice2].persona;
 
-        // Intercambiar
-        this.asignaciones[indice1].persona = persona2;
-        this.asignaciones[indice2].persona = persona1;
+    cerrarModalConfirmacion() {
+      this.mostrarModalConfirmacion = false;
+    },
+
+    limpiarTodo() {
+      this.usuariosSeleccionados = [];
+      this.asignaciones = [];
+      this.mostrarModalConfirmacion = false;
+    },
+
+    cerrarModal() {
+      // Aplicar animación de salida
+      const modalElement = this.$el.querySelector(".bg-white");
+      if (modalElement) {
+        modalElement.classList.remove("animate-modal-appear");
+        modalElement.classList.add("animate-modal-disappear");
+
+        const backdropElement = this.$el.querySelector(".fixed.inset-0");
+        if (backdropElement) {
+          backdropElement.classList.add("opacity-0");
+        }
+
+        setTimeout(() => {
+          this.$emit("cerrar");
+        }, 200);
+      } else {
+        this.$emit("cerrar");
       }
     },
   },
@@ -870,6 +955,21 @@ export default {
 
 .animate-modal-appear {
   animation: modal-appear 0.3s ease-out forwards;
+}
+
+@keyframes modal-disappear {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+.animate-modal-disappear {
+  animation: modal-disappear 0.2s ease-in forwards;
 }
 
 /* Breakpoint personalizado para textos en botones */

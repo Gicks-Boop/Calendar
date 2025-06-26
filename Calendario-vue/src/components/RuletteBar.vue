@@ -2,9 +2,9 @@
   <div>
     <!-- Modal para la ruleta -->
     <div
-      v-if=" mostrarRuleta"
+      v-if="mostrarRuleta"
       class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 p-4"
-      :class="{ 'opacity-100':  mostrarRuleta, 'opacity-0': ! mostrarRuleta }"
+      :class="{ 'opacity-100': mostrarRuleta, 'opacity-0': !mostrarRuleta }"
       @click.self="cerrarModal"
       role="dialog"
       aria-labelledby="modal-title"
@@ -13,13 +13,16 @@
       <!-- Contenedor del modal -->
       <div
         class="bg-white rounded-lg shadow-xl w-full max-w-4xl transform overflow-hidden max-h-[90vh] overflow-y-auto"
-        :class="{ 'animate-modal-appear':  mostrarRuleta }"
+        :class="{ 'animate-modal-appear': mostrarRuleta }"
       >
         <!-- Cabecera del modal -->
         <div
           class="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-4 sm:px-6 py-3 flex justify-between items-center sticky top-0 z-10"
         >
-          <h3 id="modal-title" class="text-base sm:text-lg font-bold">Ruleta de asignación</h3>
+          <div>
+            <h3 id="modal-title" class="text-base sm:text-lg font-bold">Ruleta de asignación de tareas</h3>
+            <p class="text-sm opacity-90">{{ oficinaActual?.nombre || 'Oficina actual' }}</p>
+          </div>
           <button
             @click="cerrarModal"
             class="text-white hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-purple-500 rounded-full p-1"
@@ -44,6 +47,14 @@
 
         <!-- Cuerpo del modal -->
         <div class="p-4 sm:p-6">
+          <!-- Explicación -->
+          <div class="mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <p class="text-gray-700 text-xs sm:text-sm">
+              Usa la ruleta para asignar tareas de forma aleatoria entre los usuarios de tu oficina.
+              Agrega participantes, selecciona la fecha y gira la ruleta para crear eventos en el calendario.
+            </p>
+          </div>
+
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Panel izquierdo: Ruleta y controles -->
             <div class="flex flex-col items-center">
@@ -127,7 +138,7 @@
                 </div>
               </div>
 
-              <!-- Botón para girar -->
+              <!-- Botón para girar con información adicional -->
               <button
                 @click="girarRuleta"
                 class="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base flex items-center"
@@ -152,7 +163,21 @@
                 {{ girando ? "Girando..." : "Girar ruleta" }}
               </button>
 
-              <!-- Resultado de la selección -->
+              <!-- Información de estado -->
+              <div v-if="contadorGiros > 0" class="mt-2 text-xs text-center text-gray-600">
+                Giros realizados: {{ contadorGiros }}
+              </div>
+
+              <!-- Botón de reset rápido -->
+              <button
+                v-if="contadorGiros > 0 && !girando"
+                @click="reiniciarPersonas"
+                class="mt-2 px-3 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600 transition duration-200"
+              >
+                Resetear ruleta
+              </button>
+
+              <!-- Resultado de la selección mejorado -->
               <div
                 v-if="personaSeleccionada"
                 class="mt-4 sm:mt-6 p-3 sm:p-4 bg-green-50 border border-green-200 rounded-lg text-sm sm:text-base"
@@ -161,29 +186,22 @@
               >
                 <h4 class="font-bold text-green-800 mb-1 sm:mb-2">¡Persona seleccionada!</h4>
                 <p class="text-green-700">
-                  <span class="font-medium">{{ personaSeleccionada }}</span> debe sacar la basura el
-                  día
-                  <span class="font-medium">{{ fechaFormateada }}</span>
+                  <span class="font-medium">{{ personaSeleccionada }}</span> 
+                  {{ ultimaAsignacionFueDirecta ? 'fue asignado(a) para el' : 'debe sacar la basura el' }} 
+                  día <span class="font-medium">{{ 
+                    ultimaAsignacionFueDirecta && asignaciones.length > 0 ? 
+                    formatearFecha(asignaciones[asignaciones.length - 1].fecha) : 
+                    fechaFormateada 
+                  }}</span>
                 </p>
+                <div v-if="ultimaAsignacionFueDirecta" class="mt-2 text-xs text-green-600 italic">
+                  * Asignación manual (última persona disponible)
+                </div>
               </div>
             </div>
 
             <!-- Panel derecho: Gestión y lista de personas -->
             <div>
-              <div
-                class="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 mb-4 text-xs sm:text-sm"
-              >
-                <h4 class="font-medium text-gray-700 mb-2">Instrucciones:</h4>
-                <ol class="list-decimal pl-5 space-y-1">
-                  <li class="text-gray-600">Agrega personas para participar en la asignación.</li>
-                  <li class="text-gray-600">Gira la ruleta para seleccionar una persona.</li>
-                  <li class="text-gray-600">
-                    La persona seleccionada se eliminará de la ruleta hasta que todos hayan sido
-                    asignados.
-                  </li>
-                </ol>
-              </div>
-
               <!-- Selección de fecha -->
               <div class="mb-4">
                 <label
@@ -201,34 +219,69 @@
                 />
               </div>
 
-              <!-- Formulario para agregar persona -->
+              <!-- Sección para cargar usuarios de la oficina -->
               <div class="mb-4">
-                <label
-                  for="nueva-persona"
-                  class="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
-                  >Agregar persona:</label
-                >
-                <div class="flex items-center space-x-2">
-                  <input
-                    id="nueva-persona"
-                    v-model="nuevaPersona"
-                    type="text"
-                    placeholder="Nombre de la persona"
-                    class="flex-1 px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
-                    @keyup.enter="agregarPersona"
-                  />
-                  <button
-                    @click="agregarPersona"
-                    class="px-2 sm:px-4 py-1 sm:py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-xs sm:text-sm"
-                    :disabled="!nuevaPersona.trim()"
-                    title="Agregar persona a la ruleta"
+                <div class="flex justify-between items-center mb-3">
+                  <h4 class="font-medium text-xs sm:text-sm text-gray-700">
+                    Usuarios de la oficina ({{ usuariosOficina.length }}):
+                  </h4>
+                  
+                  <!-- Botones de selección rápida -->
+                  <div class="flex space-x-2">
+                    <button
+                      @click="cargarUsuariosDeOficina"
+                      class="text-sm text-blue-600 hover:text-blue-800 px-2 py-1 rounded"
+                      :disabled="cargandoUsuarios"
+                    >
+                      {{ cargandoUsuarios ? 'Cargando...' : 'Cargar usuarios' }}
+                    </button>
+                    <button
+                      @click="agregarTodosUsuarios"
+                      class="text-sm text-green-600 hover:text-green-800 px-2 py-1 rounded"
+                      :disabled="cargandoUsuarios || usuariosOficina.length === 0"
+                    >
+                      Agregar todos
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Loading de usuarios -->
+                <div v-if="cargandoUsuarios" class="text-center py-4">
+                  <svg class="animate-spin h-6 w-6 mx-auto text-purple-500 mb-2" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <p class="text-gray-600 text-sm">Cargando usuarios de la oficina...</p>
+                </div>
+
+                <!-- Error al cargar usuarios -->
+                <div v-else-if="errorUsuarios" class="text-center py-4">
+                  <svg class="h-6 w-6 mx-auto text-red-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p class="text-red-600 mb-2 text-sm">Error al cargar usuarios</p>
+                  <button 
+                    @click="cargarUsuariosDeOficina"
+                    class="text-sm text-blue-600 hover:text-blue-800"
                   >
-                    Agregar
+                    Reintentar
                   </button>
                 </div>
-                <p v-if="errorMensaje" class="mt-1 text-xs text-red-500">{{ errorMensaje }}</p>
-              </div>
 
+                <!-- Lista compacta de usuarios cargados -->
+                <div v-else-if="usuariosOficina.length > 0" class="bg-gray-50 rounded-lg p-2 max-h-32 overflow-y-auto">
+                  <div class="text-xs text-gray-600 mb-1">Usuarios cargados ({{ usuariosOficina.length }}):</div>
+                  <div class="flex flex-wrap gap-1">
+                    <span
+                      v-for="usuario in usuariosOficina"
+                      :key="usuario.id"
+                      class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
+                    >
+                      {{ usuario.nombre }} {{ usuario.apellido }}
+                    </span>
+                  </div>
+                </div>
+              </div>
               <!-- Lista de personas disponibles - Mejorada visualmente -->
               <div class="justify-between items-center mb-3">
                 <div class="flex">
@@ -360,6 +413,14 @@
                       <span class="text-gray-500 text-xs ml-1 sm:ml-2">{{
                         formatearFecha(asignacion.fecha)
                       }}</span>
+                      <!-- Indicador de asignación directa -->
+                      <span 
+                        v-if="asignacion.asignacionDirecta" 
+                        class="ml-2 text-xs bg-blue-100 text-blue-600 px-1 rounded"
+                        title="Asignación automática"
+                      >
+                        Auto
+                      </span>
                     </div>
                     <button
                       @click="confirmarEliminarAsignacion(index)"
@@ -398,14 +459,19 @@
                 <button
                   @click="guardarAsignaciones"
                   class="w-full px-3 sm:px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm flex items-center justify-center"
-                  :disabled="asignaciones.length === 0"
-                  :title="
-                    asignaciones.length === 0
-                      ? 'Necesitas crear asignaciones primero'
-                      : 'Guardar asignaciones en el calendario'
-                  "
+                  :disabled="asignaciones.length === 0 || guardandoEventos"
                 >
                   <svg
+                    v-if="guardandoEventos"
+                    class="animate-spin h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <svg
+                    v-else
                     xmlns="http://www.w3.org/2000/svg"
                     class="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2"
                     fill="none"
@@ -420,7 +486,7 @@
                       d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
                     />
                   </svg>
-                  Guardar en calendario
+                  {{ guardandoEventos ? 'Guardando...' : 'Guardar en calendario' }}
                 </button>
               </div>
             </div>
@@ -448,9 +514,76 @@
           </button>
           <button
             @click="confirmAction"
-            class="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            class="px-4 py-2 text-white rounded-md transition-all duration-200 focus:outline-none focus:ring-2"
+            :class="{
+              'bg-red-500 hover:bg-red-600 focus:ring-red-500': confirmTitle.includes('Eliminar'),
+              'bg-blue-500 hover:bg-blue-600 focus:ring-blue-500': confirmTitle.includes('Última persona'),
+              'bg-green-500 hover:bg-green-600 focus:ring-green-500': confirmTitle.includes('Reiniciar')
+            }"
           >
-            Confirmar
+            {{ 
+              confirmTitle.includes('Eliminar') ? 'Eliminar' :
+              confirmTitle.includes('Última persona') ? 'Seleccionar fecha' :
+              'Confirmar'
+            }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal específico para seleccionar fecha de la última persona -->
+    <div
+      v-if="mostrarModalFechaUltimaPersona"
+      class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[60] transition-all duration-300"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl p-6 w-96 transform transition-all duration-300 ease-out"
+      >
+        <h3 class="text-lg font-bold text-gray-900 mb-4">
+          Asignar fecha a {{ personasDisponibles.length > 0 ? personasDisponibles[0].nombre : '' }}
+        </h3>
+        
+        <p class="text-gray-600 mb-4">
+          Selecciona la fecha en la que 
+          <span class="font-medium">{{ personasDisponibles.length > 0 ? personasDisponibles[0].nombre : '' }}</span> 
+          debe realizar la tarea de sacar la basura:
+        </p>
+        
+        <div class="mb-6">
+          <label for="fecha-ultima-persona" class="block text-sm font-medium text-gray-700 mb-2">
+            Fecha de asignación:
+          </label>
+          <input
+            id="fecha-ultima-persona"
+            v-model="fechaUltimaPersona"
+            type="date"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            :min="obtenerFechaActual()"
+          />
+        </div>
+        
+        <div class="bg-blue-50 p-3 rounded-lg mb-4">
+          <p class="text-sm text-blue-800">
+            <strong>Fecha seleccionada:</strong> 
+            {{ formatearFechaUltimaPersona() || 'Ninguna fecha seleccionada' }}
+          </p>
+        </div>
+        
+        <div class="flex justify-end space-x-3">
+          <button
+            @click="cancelarAsignacionUltimaPersona"
+            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-all duration-200"
+          >
+            Cancelar
+          </button>
+          <button
+            @click="asignarUltimaPersonaConFecha"
+            class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-all duration-200"
+            :disabled="!fechaUltimaPersona"
+          >
+            Asignar tarea
           </button>
         </div>
       </div>
@@ -459,24 +592,49 @@
 </template>
 
 <script>
+import UserService from '@/models/userService';
+import EventoService from '@/models/eventoService';
+import * as Static from '@/middleware/static';
+
+const userService = new UserService();
+const eventoService = new EventoService();
+
 export default {
   name: "RuletteBar",
-   props: {
+  props: {
     mostrarRuleta: {
       type: Boolean,
       default: false,
     },
-  }, 
+  },
   data() {
     return {
+      // Selector de usuarios
+      usuarioSeleccionado: "",
+      
+      // Usuarios de la oficina (integración con UserService)
+      usuariosOficina: [],
+      cargandoUsuarios: false,
+      errorUsuarios: false,
+      
+      // Usuario y oficina actual
+      usuarioActual: null,
+      oficinaActual: null,
+      
+      // Personas en la ruleta
       personasDisponibles: [],
-      personasOriginales: [], // Copia para restablecer al finalizar
-      nuevaPersona: "",
+      personasOriginales: [],
+      
+      // Estado de la ruleta
       girando: false,
-      anguloActual: 0,
       personaSeleccionada: null,
+      contadorGiros: 0, // Para tracking de giros
+      
+      // Configuración
       fechaAsignacion: this.obtenerFechaActual(),
+      fechaUltimaPersona: this.obtenerFechaActual(),
       asignaciones: [],
+      guardandoEventos: false,
       errorMensaje: "",
       colores: this.generarColoresArmonicos(20),
 
@@ -485,6 +643,9 @@ export default {
       confirmTitle: "",
       confirmMessage: "",
       confirmCallback: null,
+      
+      // Modal específico para última persona
+      mostrarModalFechaUltimaPersona: false,
     };
   },
   computed: {
@@ -492,7 +653,7 @@ export default {
       if (!this.fechaAsignacion) return "";
 
       const [year, month, day] = this.fechaAsignacion.split("-").map(Number);
-      const fecha = new Date(year, month - 1, day); // Mes es base 0 en JavaScript
+      const fecha = new Date(year, month - 1, day);
 
       return fecha.toLocaleDateString("es-ES", {
         weekday: "long",
@@ -501,34 +662,132 @@ export default {
         day: "numeric",
       });
     },
+    
+    usuariosDisponiblesParaAgregar() {
+      // Filtrar usuarios que ya no están en la ruleta
+      return this.usuariosOficina.filter(usuario => 
+        !this.personasDisponibles.some(persona => persona.usuarioId === usuario.id)
+      );
+    },
+    
+    ultimaAsignacionFueDirecta() {
+      if (this.asignaciones.length === 0) return false;
+      const ultimaAsignacion = this.asignaciones[this.asignaciones.length - 1];
+      return ultimaAsignacion.asignacionDirecta === true;
+    },
+    
+    fechaFormateadaUltimaPersona() {
+      if (!this.fechaUltimaPersona) return "";
+      
+      const [year, month, day] = this.fechaUltimaPersona.split("-").map(Number);
+      const fecha = new Date(year, month - 1, day);
+      
+      return fecha.toLocaleDateString("es-ES", {
+        weekday: "long",
+        day: "numeric", 
+        month: "long",
+        year: "numeric",
+      });
+    },
+  },
+  watch: {
+    mostrarRuleta: {
+      handler(nuevo) {
+        if (nuevo) {
+          this.inicializar();
+        }
+      },
+      immediate: true
+    }
   },
   created() {
     // Cargar datos guardados en localStorage si existen
     this.cargarDatosGuardados();
   },
   methods: {
-     cerrarModal() {
-  // Aplicar animación de salida
-  const modalElement = this.$el.querySelector(".bg-white.rounded-lg.shadow-xl");
-  if (modalElement) {
-    modalElement.classList.remove("animate-modal-appear");
-    modalElement.classList.add("animate-modal-disappear");
+    async inicializar() {
+      this.cargarUsuarioActual();
+      // No cargar automáticamente, dejar que el usuario haga clic en "Cargar usuarios"
+    },
 
-    // Aplicar fade out al backdrop
-    const backdropElement = this.$el.querySelector(".fixed.inset-0");
-    if (backdropElement) {
-      backdropElement.classList.add("opacity-0");
-    }
+    cargarUsuarioActual() {
+      this.usuarioActual = Static.BM_GET_USER_DATA();
+      this.oficinaActual = this.usuarioActual?.oficina;
+      console.log('Usuario actual:', this.usuarioActual);
+    },
 
-    // Esperar a que termine la animación antes de cerrar completamente
-    setTimeout(() => {
-      this.$emit("cerrar");
-    }, 200); // Duración de la animación en ms
-  } else {
-    // Si por alguna razón no se encuentra el elemento, cerrar inmediatamente
-    this.$emit("cerrar");
-  }
-},
+    esUsuarioActual(usuario) {
+      return this.usuarioActual && this.usuarioActual.id === usuario.id;
+    },
+
+    async cargarUsuariosDeOficina() {
+      try {
+        this.cargandoUsuarios = true;
+        this.errorUsuarios = false;
+        
+        const response = await userService.getMyOfficeUsers();
+        this.usuariosOficina = response.data || response || [];
+        
+        console.log('Usuarios de oficina cargados:', this.usuariosOficina);
+        
+      } catch (error) {
+        console.error('Error al cargar usuarios de oficina:', error);
+        this.errorUsuarios = true;
+        this.usuariosOficina = [];
+      } finally {
+        this.cargandoUsuarios = false;
+      }
+    },
+
+    agregarTodosUsuarios() {
+      if (this.usuariosOficina.length === 0) {
+        this.errorMensaje = "Primero debes cargar los usuarios de la oficina";
+        return;
+      }
+
+      // Limpiar personas existentes para evitar duplicados
+      this.personasDisponibles = [];
+      this.personasOriginales = [];
+
+      // Agregar todos los usuarios de la oficina
+      this.usuariosOficina.forEach((usuario, index) => {
+        const colorIndex = index % this.colores.length;
+        const persona = {
+          id: usuario.id,
+          nombre: `${usuario.nombre} ${usuario.apellido}`,
+          color: this.colores[colorIndex],
+          usuarioId: usuario.id // Guardar referencia al ID del usuario
+        };
+
+        this.personasDisponibles.push(persona);
+        this.personasOriginales.push({ ...persona });
+      });
+
+      this.errorMensaje = "";
+      this.guardarEnLocalStorage();
+    },
+
+    cerrarModal() {
+      // Aplicar animación de salida
+      const modalElement = this.$el.querySelector(".bg-white.rounded-lg.shadow-xl");
+      if (modalElement) {
+        modalElement.classList.remove("animate-modal-appear");
+        modalElement.classList.add("animate-modal-disappear");
+
+        // Aplicar fade out al backdrop
+        const backdropElement = this.$el.querySelector(".fixed.inset-0");
+        if (backdropElement) {
+          backdropElement.classList.add("opacity-0");
+        }
+
+        // Esperar a que termine la animación antes de cerrar completamente
+        setTimeout(() => {
+          this.$emit("cerrar");
+        }, 200);
+      } else {
+        this.$emit("cerrar");
+      }
+    },
 
     generarColoresArmonicos(cantidad) {
       const colores = [];
@@ -567,10 +826,11 @@ export default {
         id: Date.now(),
         nombre: this.nuevaPersona.trim(),
         color: this.colores[colorIndex],
+        usuarioId: null // Persona manual no tiene usuarioId
       };
 
       this.personasDisponibles.push(nuevaPersona);
-      this.personasOriginales.push({ ...nuevaPersona }); // Guardar copia
+      this.personasOriginales.push({ ...nuevaPersona });
       this.nuevaPersona = "";
 
       // Guardar en localStorage
@@ -608,6 +868,18 @@ export default {
     limpiarPersonas() {
       this.personasDisponibles = [];
       this.actualizarPersonasOriginales();
+      
+      // Resetear estado de la ruleta
+      this.contadorGiros = 0;
+      this.personaSeleccionada = null;
+      
+      // Resetear visualmente la ruleta con animación suave
+      const ruleta = this.$refs.ruleta;
+      if (ruleta) {
+        ruleta.style.transition = "transform 0.5s ease";
+        ruleta.style.transform = "rotate(0deg)";
+      }
+      
       this.guardarEnLocalStorage();
     },
 
@@ -644,38 +916,56 @@ export default {
       this.girando = true;
       this.personaSeleccionada = null;
 
-      // Configuración de la animación
-      const vueltasMinimas = 3; // Mínimo de vueltas completas
-      const vueltasMaximas = 5; // Máximo de vueltas completas
-      const vueltas =
-        vueltasMinimas + Math.floor(Math.random() * (vueltasMaximas - vueltasMinimas + 1));
-      const anguloPorPersona = 360 / this.personasDisponibles.length;
-
-      // Seleccionar aleatoriamente una persona (índice)
-      const indiceSeleccionado = Math.floor(Math.random() * this.personasDisponibles.length);
-
-      // Calcular el ángulo final exacto para que la flecha apunte a la persona seleccionada
-      const anguloFinalPosicion =
-        360 - (indiceSeleccionado * anguloPorPersona + anguloPorPersona / 2);
-      const nuevoAngulo = this.anguloActual + vueltas * 360 + anguloFinalPosicion;
-
-      // Aplicar la animación con easing más realista
       const ruleta = this.$refs.ruleta;
-      if (ruleta) {
-        ruleta.style.transition = "transform 4s cubic-bezier(0.2, 0.8, 0.3, 1)";
-        ruleta.style.transform = `rotate(${nuevoAngulo}deg)`;
-        this.anguloActual = nuevoAngulo % 360;
+      if (!ruleta) return;
 
-        // Determinar la persona seleccionada
-        setTimeout(() => {
-          this.personaSeleccionada = this.personasDisponibles[indiceSeleccionado].nombre;
-          this.finalizarGiro(indiceSeleccionado);
-          this.girando = false;
-        }, 4000);
-      }
+      // RESETEAR COMPLETAMENTE la ruleta a 0 grados
+      ruleta.style.transition = "none";
+      ruleta.style.transform = "rotate(0deg)";
+      
+      // Forzar reflow para asegurar el reset
+      void ruleta.offsetWidth;
+
+      // Seleccionar persona aleatoriamente
+      const indiceSeleccionado = Math.floor(Math.random() * this.personasDisponibles.length);
+      
+      // Configuración de animación completamente nueva cada vez
+      const vueltasCompletas = 4 + Math.floor(Math.random() * 4); // 4-7 vueltas
+      const anguloPorPersona = 360 / this.personasDisponibles.length;
+      
+      // Ángulo exacto donde debe parar (posición de la persona seleccionada)
+      // La flecha apunta hacia arriba (0°), así que calculamos desde ahí
+      const anguloPersona = indiceSeleccionado * anguloPorPersona;
+      
+      // Agregar variación aleatoria dentro del sector (±20% del sector)
+      const variacion = (Math.random() - 0.5) * anguloPorPersona * 0.4;
+      
+      // Ángulo final: vueltas completas + posición específica + variación
+      const anguloFinal = vueltasCompletas * 360 + anguloPersona + variacion;
+      
+      // Duración aleatoria para cada giro
+      const duracion = 3000 + Math.random() * 2000; // 3-5 segundos
+
+      // Aplicar la animación desde 0 hasta el ángulo final
+      setTimeout(() => {
+        ruleta.style.transition = `transform ${duracion}ms cubic-bezier(0.25, 0.1, 0.25, 1)`;
+        ruleta.style.transform = `rotate(${anguloFinal}deg)`;
+      }, 50); // Pequeño delay para asegurar que el reset se aplique
+
+      // Finalizar después de la animación
+      setTimeout(() => {
+        this.personaSeleccionada = this.personasDisponibles[indiceSeleccionado].nombre;
+        this.finalizarGiro(indiceSeleccionado);
+        this.girando = false;
+        
+        // NO actualizar anguloActual, siempre empezamos desde 0
+      }, duracion + 100);
     },
 
     finalizarGiro(indice) {
+      // Incrementar contador de giros
+      this.contadorGiros++;
+      
       // Agregar a las asignaciones
       if (this.fechaAsignacion) {
         const persona = this.personasDisponibles[indice];
@@ -687,6 +977,8 @@ export default {
           persona: persona.nombre,
           fecha: fechaCorrecta,
           color: persona.color,
+          usuarioId: persona.usuarioId, // Incluir usuarioId para el backend
+          giro: this.contadorGiros // Número de giro para referencia
         });
 
         // Eliminar de las personas disponibles
@@ -698,59 +990,95 @@ export default {
           setTimeout(() => {
             this.mostrarConfirmacionReinicio();
           }, 1000);
+        } else if (this.personasDisponibles.length === 1) {
+          // Si solo queda una persona, mostrar mensaje especial
+          setTimeout(() => {
+            this.mostrarConfirmacionUltimaPersona();
+          }, 1000);
         }
       }
     },
 
-    determinarPersonaSeleccionada() {
-      if (this.personasDisponibles.length === 0) return;
+    mostrarConfirmacionUltimaPersona() {
+      this.confirmTitle = "Última persona disponible";
+      this.confirmMessage = `Solo queda ${this.personasDisponibles[0].nombre} disponible. ¿Desea asignarle una tarea seleccionando una nueva fecha o reiniciar la lista de participantes?`;
+      this.confirmCallback = this.mostrarSelectorFechaUltimaPersona;
+      this.showConfirmModal = true;
+    },
 
-      // El ángulo normalizado (0-360) determina quién fue seleccionado
-      const anguloPorSeccion = 360 / this.personasDisponibles.length;
-      const anguloNormalizado = ((this.anguloActual % 360) + 360) % 360; // Asegurar que sea positivo
+    mostrarSelectorFechaUltimaPersona() {
+      // Cerrar modal de confirmación
+      this.showConfirmModal = false;
+      
+      // Mostrar modal especializado para seleccionar fecha de la última persona
+      this.mostrarModalFechaUltimaPersona = true;
+    },
 
-      // La flecha apunta hacia arriba (0 grados), pero la ruleta gira, así que el índice:
-      // Nota: Restamos de 360 porque la ruleta gira en sentido horario, pero el punto de referencia es hacia arriba
-      const indiceSeleccionado =
-        Math.floor((360 - anguloNormalizado) / anguloPorSeccion) % this.personasDisponibles.length;
-
-      // Guardar la persona seleccionada
-      const persona = this.personasDisponibles[indiceSeleccionado];
-      this.personaSeleccionada = persona.nombre;
-
-      // Agregar a las asignaciones
-      if (this.fechaAsignacion) {
-        const [year, month, day] = this.fechaAsignacion.split("-").map(Number);
-        const fechaCorrecta = new Date(year, month - 1, day); // Mes es base 0 en JavaScript
+    asignarUltimaPersonaConFecha() {
+      if (this.personasDisponibles.length === 1 && this.fechaUltimaPersona) {
+        const ultimaPersona = this.personasDisponibles[0];
+        
+        // Usar la fecha específica seleccionada para la última persona
+        const [year, month, day] = this.fechaUltimaPersona.split("-").map(Number);
+        const fechaCorrecta = new Date(year, month - 1, day);
 
         this.asignaciones.push({
-          persona: persona.nombre,
+          persona: ultimaPersona.nombre,
           fecha: fechaCorrecta,
-          color: persona.color,
+          color: ultimaPersona.color,
+          usuarioId: ultimaPersona.usuarioId,
+          giro: this.contadorGiros + 1,
+          asignacionDirecta: true
         });
 
+        // Incrementar contador
+        this.contadorGiros++;
+        
+        // Mostrar resultado
+        this.personaSeleccionada = ultimaPersona.nombre;
+        
         // Eliminar de las personas disponibles
-        this.personasDisponibles.splice(indiceSeleccionado, 1);
-
-        // Guardar en localStorage
+        this.personasDisponibles.splice(0, 1);
         this.guardarEnLocalStorage();
-
-        // Si ya no hay personas disponibles, preguntar si quiere reiniciar
-        if (this.personasDisponibles.length === 0) {
-          setTimeout(() => {
-            this.confirmTitle = "Reiniciar participantes";
-            this.confirmMessage =
-              "Ya se han asignado todas las personas. ¿Desea reiniciar la lista para nuevas asignaciones?";
-            this.confirmCallback = this.reiniciarPersonas;
-            this.showConfirmModal = true;
-          }, 500);
-        }
+        
+        // Cerrar modal de fecha
+        this.mostrarModalFechaUltimaPersona = false;
+        
+        // Mostrar confirmación de reinicio si ya no hay más personas
+        setTimeout(() => {
+          this.mostrarConfirmacionReinicio();
+        }, 1500);
+      } else {
+        console.error("No se puede asignar: no hay persona o fecha disponible");
       }
+    },
+
+    cancelarAsignacionUltimaPersona() {
+      this.mostrarModalFechaUltimaPersona = false;
+      this.fechaUltimaPersona = this.obtenerFechaActual();
+    },
+
+    mostrarConfirmacionReinicio() {
+      this.confirmTitle = "Reiniciar participantes";
+      this.confirmMessage =
+        "Ya se han asignado todas las personas. ¿Desea reiniciar la lista para nuevas asignaciones?";
+      this.confirmCallback = this.reiniciarPersonas;
+      this.showConfirmModal = true;
     },
 
     reiniciarPersonas() {
       // Restaurar la lista original de personas
       this.personasDisponibles = this.personasOriginales.map((p) => ({ ...p }));
+
+      // Resetear el contador de giros solamente
+      this.contadorGiros = 0;
+      
+      // RESETEAR la ruleta visualmente a posición inicial
+      const ruleta = this.$refs.ruleta;
+      if (ruleta) {
+        ruleta.style.transition = "transform 0.5s ease";
+        ruleta.style.transform = "rotate(0deg)";
+      }
 
       // Guardar en localStorage
       this.guardarEnLocalStorage();
@@ -785,6 +1113,7 @@ export default {
             id: Date.now(),
             nombre: asignacion.persona,
             color: asignacion.color,
+            usuarioId: asignacion.usuarioId
           });
         }
       }
@@ -796,27 +1125,71 @@ export default {
       this.guardarEnLocalStorage();
     },
 
-    guardarAsignaciones() {
+    async guardarAsignaciones() {
       if (this.asignaciones.length === 0) return;
 
-      // Crear eventos para cada asignación
-      const eventos = this.asignaciones.map((asignacion) => {
-        const fecha = new Date(asignacion.fecha);
-        return {
-          titulo: `Sacar basura: ${asignacion.persona}`,
-          fecha: fecha,
-          categoria: "basura",
-          descripcion: `Tarea asignada por ruleta a ${asignacion.persona}`,
-          hora: "18:00",
-          id: Date.now() + Math.random().toString(36).substr(2, 9), // ID único
-          color: asignacion.color,
-        };
-      });
+      try {
+        this.guardandoEventos = true;
+        
+        // Crear eventos para cada asignación
+        const eventosCreados = [];
+        
+        for (const asignacion of this.asignaciones) {
+          const eventoData = {
+            titulo: `Sacar basura`,
+            descripcion: `Tarea asignada por ruleta a ${asignacion.persona}`,
+            categoria: 'basura',
+            fechaInicio: new Date(asignacion.fecha.getFullYear(), asignacion.fecha.getMonth(), asignacion.fecha.getDate(), 18, 0).toISOString(),
+            fechaFin: new Date(asignacion.fecha.getFullYear(), asignacion.fecha.getMonth(), asignacion.fecha.getDate(), 18, 30).toISOString(),
+            usuariosAsignadosIds: asignacion.usuarioId ? [asignacion.usuarioId] : []
+          };
 
-      console.log("RuletteBar: Emitiendo guardar-asignaciones con", eventos.length, "eventos");
-      // Emitir evento para guardar en el calendario principal
-      this.$emit("guardar-asignaciones", eventos);
-      this.cerrarModal();
+          try {
+            const eventoCreado = await eventoService.createEventoForCurrentUser(eventoData);
+            eventosCreados.push(eventoCreado);
+          } catch (error) {
+            console.error(`Error al crear evento para ${asignacion.persona}:`, error);
+          }
+        }
+
+        console.log(`RuletteBar: ${eventosCreados.length} eventos creados exitosamente`);
+        
+        // Emitir evento para notificar al componente padre
+        this.$emit("guardar-asignaciones", {
+          eventosCreados: eventosCreados.length,
+          totalAsignaciones: this.asignaciones.length,
+          tipo: 'ruleta'
+        });
+
+        // Mostrar mensaje de éxito
+        this.$emit("mostrar-exito", `Se crearon ${eventosCreados.length} eventos de basura asignados por ruleta`);
+        
+        // Limpiar asignaciones después del guardado exitoso
+        this.asignaciones = [];
+        this.guardarEnLocalStorage();
+        
+        this.cerrarModal();
+        
+      } catch (error) {
+        console.error('Error al guardar asignaciones:', error);
+        this.$emit("mostrar-error", "Error al guardar las asignaciones en el calendario");
+      } finally {
+        this.guardandoEventos = false;
+      }
+    },
+
+    formatearFechaUltimaPersona() {
+      if (!this.fechaUltimaPersona) return "";
+      
+      const [year, month, day] = this.fechaUltimaPersona.split("-").map(Number);
+      const fecha = new Date(year, month - 1, day);
+      
+      return fecha.toLocaleDateString("es-ES", {
+        weekday: "long",
+        day: "numeric", 
+        month: "long",
+        year: "numeric",
+      });
     },
 
     formatearFecha(fecha) {
@@ -838,7 +1211,22 @@ export default {
     // Función para determinar si el texto debe ser blanco o negro según el fondo
     getContrastYIQ(hexcolor) {
       // Si el color no tiene formato "#rrggbb", devolver negro por defecto
-      if (!hexcolor || typeof hexcolor !== "string" || !hexcolor.startsWith("#")) {
+      if (!hexcolor || typeof hexcolor !== "string") {
+        return "#000";
+      }
+
+      // Para colores HSL, convertir a contraste básico
+      if (hexcolor.startsWith('hsl')) {
+        // Extraer el valor de luminosidad del HSL
+        const match = hexcolor.match(/hsl\(\d+,\s*\d+%,\s*(\d+)%\)/);
+        if (match) {
+          const lightness = parseInt(match[1]);
+          return lightness > 50 ? "#000000" : "#FFFFFF";
+        }
+        return "#000000";
+      }
+
+      if (!hexcolor.startsWith("#")) {
         return "#000";
       }
 
@@ -880,7 +1268,7 @@ export default {
       this.showConfirmModal = false;
     },
 
-    // Persistencia con localStorage
+    // Persistencia con localStorage simplificada
     guardarEnLocalStorage() {
       try {
         localStorage.setItem("ruletaPersonasDisponibles", JSON.stringify(this.personasDisponibles));
@@ -891,11 +1279,13 @@ export default {
             this.asignaciones.map((a) => {
               return {
                 ...a,
-                fecha: a.fecha.toISOString(), // Convertir Date a string para almacenar
+                fecha: a.fecha.toISOString(),
               };
             })
           )
         );
+        localStorage.setItem("ruletaContadorGiros", this.contadorGiros.toString());
+        
         console.log("Datos guardados en localStorage");
       } catch (error) {
         console.error("Error al guardar en localStorage:", error);
@@ -920,16 +1310,19 @@ export default {
         const asignacionesGuardadas = localStorage.getItem("ruletaAsignaciones");
         if (asignacionesGuardadas) {
           this.asignaciones = JSON.parse(asignacionesGuardadas).map((a) => {
-            // Convertir string a Date pero asegurando que la fecha sea correcta
             const fecha = new Date(a.fecha);
-            // Corregir el problema de zona horaria si es necesario
             fecha.setMinutes(fecha.getMinutes() + fecha.getTimezoneOffset());
-
             return {
               ...a,
               fecha: fecha,
             };
           });
+        }
+
+        // Recuperar contador de giros
+        const contadorGuardado = localStorage.getItem("ruletaContadorGiros");
+        if (contadorGuardado) {
+          this.contadorGiros = parseInt(contadorGuardado) || 0;
         }
 
         console.log("Datos cargados desde localStorage");
@@ -939,6 +1332,7 @@ export default {
         this.personasDisponibles = [];
         this.personasOriginales = [];
         this.asignaciones = [];
+        this.contadorGiros = 0;
       }
     },
   },
@@ -963,6 +1357,21 @@ export default {
 
 .animate-modal-appear {
   animation: modal-appear 0.3s ease-out forwards;
+}
+
+@keyframes modal-disappear {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+.animate-modal-disappear {
+  animation: modal-disappear 0.2s ease-in forwards;
 }
 
 /* Estilos responsivos adicionales */

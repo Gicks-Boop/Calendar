@@ -43,7 +43,22 @@ export const BM_GET_USER_DATA = () => {
   return getUserData();
 }; 
 
-
+ export const BM_GET_USER_FOR_OPERATIONS = () => {
+ const userData = getUserData();
+ if (!userData) {
+   return null;
+ }
+ 
+ return {
+   id: userData.id,
+   nombre: userData.nombre,
+   apellido: userData.apellido,
+   email: userData.email,
+   oficinaId: userData.oficina?.id || userData.oficinaId,
+   oficina: userData.oficina
+ };
+};
+ 
 export const BM_GET_SIDEBAR_DATA = () => {
   const userData = getUserData();
   if (!userData) {

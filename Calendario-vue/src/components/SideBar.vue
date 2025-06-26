@@ -113,13 +113,6 @@ export default {
     RuletteBar
   },
 
-/*   props: {
-    usuario: {
-      type: Object,
-      default: () => ({}),
-    },
-    
-  }, */
   data() {
     return {
       menuAbierto: false,
