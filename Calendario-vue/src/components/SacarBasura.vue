@@ -619,6 +619,8 @@ export default {
       if (this.asignaciones.length === 0) return;
 
       try {
+        
+
         this.guardandoEventos = true;
         
         // Crear eventos para cada asignación

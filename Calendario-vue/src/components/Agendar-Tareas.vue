@@ -82,14 +82,14 @@
 
             <!-- Selector de usuarios múltiple -->
             <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Asignar usuarios (opcional)</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Asignar usuarios</label>
               
               <!-- Opciones de asignación -->
               <div class="flex flex-wrap gap-2 mb-3">
-                <button type="button" @click="limpiarAsignaciones"
+                <!-- <button type="button" @click="limpiarAsignaciones"
                   class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors">
                   Sin asignar (Global)
-                </button>
+                </button> -->
                 <button type="button" @click="asignarATodos"
                   class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors">
                   Asignar a todos
@@ -136,9 +136,9 @@
               <div v-if="nuevoEvento.usuariosAsignadosIds.length > 0" class="mt-2 text-sm text-gray-600">
                 {{ nuevoEvento.usuariosAsignadosIds.length }} usuario(s) seleccionado(s)
               </div>
-              <div v-else class="mt-2 text-sm text-yellow-600">
+              <!-- <div v-else class="mt-2 text-sm text-yellow-600">
                 Evento global - visible para toda la oficina
-              </div>
+              </div> -->
             </div>
 
             <!-- Botones de acción -->
@@ -241,7 +241,7 @@ export default {
         this.nuevoEvento.categoria &&
         this.nuevoEvento.fechaInicio &&
         this.nuevoEvento.fechaFin &&
-        new Date(this.nuevoEvento.fechaInicio) < new Date(this.nuevoEvento.fechaFin)
+        new Date(this.nuevoEvento.fechaInicio) < new Date(this.nuevoEvento.fechaFin) 
       );
     },
   },

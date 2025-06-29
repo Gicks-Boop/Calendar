@@ -47,7 +47,8 @@
         <!-- Opciones simplificadas -->
         <div class="flex-1 px-4 py-2 space-y-3">
           <!-- Botón Asignar Basura -->
-          <button @click="abrirModalBasura"
+          <button v-if="canUseAdminTools"
+           @click="abrirModalBasura"
             class="w-full flex items-center justify-center px-4 py-3 text-left rounded-lg text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors bg-gray-50">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -58,7 +59,8 @@
           </button>
 
           <!-- Botón Ruleta -->
-          <button @click="abrirModalRuleta"
+          <button  v-if="canUseAdminTools"
+          @click="abrirModalRuleta"
             class="w-full flex items-center justify-center px-4 py-3 text-left rounded-lg text-gray-700 hover:bg-purple-100 hover:text-purple-700 transition-colors bg-gray-50">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -88,17 +90,12 @@
     <div v-if="menuAbierto" class="fixed inset-0 bg-opacity-50 backdrop-blur-sm z-20" @click="toggleMenu"></div>
 
     <!-- Componente SacarBasura -->
-    <SacarBasura 
-     :mostrarModal="mostrarModalBasura" 
-     @cerrar="cerrarModalBasura"
-     @guardar-asignaciones="handleGuardarAsignaciones" />
+    <SacarBasura :mostrarModal="mostrarModalBasura" @cerrar="cerrarModalBasura"
+      @guardar-asignaciones="handleGuardarAsignaciones" />
 
-     <!-- Componente RuletteBar-->
-      <RuletteBar
-      :mostrarRuleta="mostrarModalRuleta"
-      @cerrar="cerrarModalRuleta"
-      @guardar-asignaciones="handleGuardarAsignaciones"
-      />
+    <!-- Componente RuletteBar-->
+    <RuletteBar :mostrarRuleta="mostrarModalRuleta" @cerrar="cerrarModalRuleta"
+      @guardar-asignaciones="handleGuardarAsignaciones" />
 
   </div>
 </template>
@@ -118,7 +115,7 @@ export default {
       menuAbierto: false,
       userInfo: {},
       mostrarModalBasura: false,
-      mostrarModalRuleta: false  
+      mostrarModalRuleta: false
     };
   },
   computed: {
@@ -137,28 +134,37 @@ export default {
 
       return "U";
     },
+    canUseAdminTools() {
+      return this.$static.BM_IS_ADMIN();
+    }
   },
   methods: {
     toggleMenu() {
       this.menuAbierto = !this.menuAbierto;
     },
-  
+
     abrirModalBasura() {
-      this.mostrarModalBasura = true; 
-     this.menuAbierto = false;
+      if (this.$static.BM_GET_USER_ROLE()?.nombre === 'USUARIO') {
+        return;
+      }
+      this.mostrarModalBasura = true;
+      this.menuAbierto = false;
     },
-    cerrarModalBasura() {  
+    cerrarModalBasura() {
       this.mostrarModalBasura = false;
       this.menuAbierto = true;
     },
 
-      abrirModalRuleta(){
-      this.mostrarModalRuleta = true; 
+    abrirModalRuleta() {
+      if (this.$static.BM_GET_USER_ROLE()?.nombre === 'USUARIO') {
+        return;
+      }
+      this.mostrarModalRuleta = true;
       this.menuAbierto = false;
     },
 
-      cerrarModalRuleta(){
-      this.mostrarModalRuleta = false; 
+    cerrarModalRuleta() {
+      this.mostrarModalRuleta = false;
       this.menuAbierto = true;
     },
 
@@ -168,7 +174,7 @@ export default {
       this.$emit("guardar-asignaciones", eventos);
     },
 
-     cerrarSesion() {
+    cerrarSesion() {
       this.$session.logOut()
     }
 
