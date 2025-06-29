@@ -50,6 +50,9 @@
           </svg>
         </button>
 
+        <notificacion-calendar/>
+
+
         <!-- SideBar component -->
         <side-bar
          :usuario="usuario"
@@ -167,6 +170,7 @@ import EventoService from '@/models/eventoService';
 const eventoService = new EventoService();
 import PermisoService from "@/models/permisoService";
 const permisoService = new PermisoService();
+import notificacionCalendar from "@/components/notificacionCalendar.vue";
 
 export default {
   name: "CalendarioMain",
@@ -174,6 +178,7 @@ export default {
     AgendarTareas,
     VisualizadorTareas,
     SideBar,
+    notificacionCalendar
   },
   props: {
     usuario: {
