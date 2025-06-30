@@ -317,6 +317,10 @@ export default {
       return this.canCreateEvent && (this.isAdmin || permisoService.hasAnyPermission(['gestionarRoles', 'crearEvento']));
     },
 
+    canUseAdminTools() {
+      return this.$static.BM_IS_ADMIN();
+    }
+
 
   },
 
@@ -324,7 +328,6 @@ export default {
   watch: {
     fechaActual: {
       handler(nuevaFecha, fechaAnterior) {
-        /* this.cargarEventosDelMes(); */
         if (!fechaAnterior) {
           this.cargarEventos();
         }
@@ -345,7 +348,6 @@ export default {
         // USAR MÉTODO QUE OBTIENE EVENTOS ASIGNADOS + GLOBALES DE OFICINA console.log("Usuario actual:", userData);
         const response = await eventoService.getEventosCurrentUserWithGlobals();
 
-        //console.log("Eventos completos recibidos:", response);
         const eventos = response.data || response;
 
         this.organizarEventosPorFecha(eventos);
@@ -401,9 +403,6 @@ export default {
 
       // Actualizar el estado
       this.eventos = eventosOrganizados;
-
-      /* console.log("Eventos organizados por fecha:", this.eventos);
-      console.log("Eventos globales encontrados:", this.contarEventosGlobales()); */
     },
 
     // VERIFICAR SI UN EVENTO ES GLOBAL
@@ -488,6 +487,9 @@ export default {
     },
 
     selectDay(dia) {
+      if (this.$static.BM_GET_USER_ROLE()?.nombre === 'USUARIO') {
+        return;
+      }
       this.diaSeleccionado = dia.fecha;
       this.eventoEditando = null;
       this.$emit("dia-seleccionado", dia.fecha);

@@ -322,7 +322,7 @@
                       stroke-width="2"
                       d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                     />
-                  </svg>
+                  </svg>Generar asignaciones
                   <span class="hidden xs:inline">Generar asignaciones</span>
                   <span class="xs:hidden">Generar</span>
                 </span>
@@ -357,7 +357,7 @@
                       stroke-width="2"
                       d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
                     />
-                  </svg>
+                  </svg>Guardar en el calendario
                   <span class="hidden xs:inline">
                     {{ guardandoEventos ? 'Guardando...' : 'Guardar en calendario' }}
                   </span>
@@ -387,7 +387,7 @@
                     stroke-width="2"
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
-                </svg>
+                </svg>Guardar PDF
                 <span class="hidden xs:inline">Exportar PDF</span>
                 <span class="xs:hidden">PDF</span>
               </span>
@@ -440,6 +440,7 @@ import html2pdf from "html2pdf.js";
 import UserService from '@/models/userService';
 import EventoService from '@/models/eventoService';
 import * as Static from '@/middleware/static';
+import Dialog from "./dialog/dialog";
 
 const userService = new UserService();
 const eventoService = new EventoService();
@@ -605,7 +606,7 @@ export default {
         // Quitar ese usuario de la lista temporal
         usuariosPorAsignar.splice(indiceAleatorio, 1);
       }
-
+      
       this.asignaciones = asignaciones;
     },
 

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div >
     <!-- Overlay modal que cubre toda la pantalla cuando está activo -->
     <div v-if="mostrarModal"
       class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300"
@@ -178,6 +178,7 @@ const eventoService = new EventoService();
 import UserService from '@/models/userService';
 const userService = new UserService();
 import * as Static from '@/middleware/static';
+import Dialog from './dialog/dialog';
 
 export default {
   name: "AgendarTareas",
@@ -387,14 +388,17 @@ export default {
           usuariosAsignadosIds: this.nuevoEvento.usuariosAsignadosIds || []
         };
 
+        Dialog.show("Espere","Creando Evento",Dialog.type.progress)
+
         let eventoGuardado;
 
         if (this.eventoEditar) {
           eventoGuardado = await eventoService.updateEvento(this.eventoEditar.id, eventoData);
-          this.$emit("exito", "Evento actualizado correctamente");
+          Dialog.show("Evento actualizado correctamente","exito",Dialog.type.success)
         } else {
           eventoGuardado = await eventoService.createEventoForCurrentUser(eventoData);
-          this.$emit("exito", "Evento creado correctamente");
+          Dialog.show("Evento creado correctamente","exito",Dialog.type.success)
+          
         }
 
         this.$emit("guardar-evento", eventoGuardado);
