@@ -1324,8 +1324,6 @@ export default {
         if (contadorGuardado) {
           this.contadorGiros = parseInt(contadorGuardado) || 0;
         }
-
-        console.log("Datos cargados desde localStorage");
       } catch (error) {
         console.error("Error al cargar datos desde localStorage:", error);
         // Si hay error, inicializar con valores por defecto

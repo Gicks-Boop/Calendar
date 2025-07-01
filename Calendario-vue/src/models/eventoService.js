@@ -428,6 +428,63 @@ class EventoService {
     
     return this.removerUsuario(eventoId, userData.id);
   }
+  // Agregar al final de EventoService.js
+
+/**
+ * Crear múltiples eventos de basura en paralelo (RÁPIDO Y SIMPLE)
+ * @param {Array} asignaciones - Array de asignaciones {usuarioId, fecha, nombreUsuario}
+ */
+async createEventosBasuraRapido(asignaciones) {
+  const userData = Static.BM_GET_USER_DATA();
+  if (!userData?.id) {
+    throw new Error("Usuario no autenticado");
+  }
+
+  // Crear todas las promesas de una vez (ejecución en paralelo)
+  const promesasEventos = asignaciones.map(asignacion => {
+    const eventoData = {
+      titulo: `Sacar basura`,
+      descripcion: `Tarea asignada a ${asignacion.nombreUsuario}`,
+      categoria: 'basura',
+      fechaInicio: new Date(
+        asignacion.fecha.getFullYear(), 
+        asignacion.fecha.getMonth(), 
+        asignacion.fecha.getDate(), 
+        18, 0
+      ).toISOString(),
+      fechaFin: new Date(
+        asignacion.fecha.getFullYear(), 
+        asignacion.fecha.getMonth(), 
+        asignacion.fecha.getDate(), 
+        18, 30
+      ).toISOString(),
+      usuariosAsignadosIds: [asignacion.usuarioId],
+      creadorId: userData.id,
+      oficinaNombre: userData.oficina,
+    };
+
+    return this.createEvento(eventoData);
+  });
+
+  // Ejecutar TODAS las promesas en paralelo con Promise.allSettled
+  // (más robusto que Promise.all porque no falla si uno falla)
+  const resultados = await Promise.allSettled(promesasEventos);
+  
+  // Separar exitosos y fallidos
+  const exitosos = resultados
+    .filter(resultado => resultado.status === 'fulfilled')
+    .map(resultado => resultado.value);
+    
+  const fallidos = resultados
+    .filter(resultado => resultado.status === 'rejected')
+    .map(resultado => resultado.reason);
+
+  return {
+    exitosos,
+    fallidos,
+    total: exitosos.length
+  };
+}
 }
 
 export default EventoService;

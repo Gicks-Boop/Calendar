@@ -1,8 +1,11 @@
 <script>
-import Oficina  from '@/models/oficinaService';
-const oficinas = new  Oficina()
-import  User  from '@/models/userService';
-const user = new  User()
+import Oficina from '@/models/oficinaService';
+const oficinas = new Oficina()
+import User from '@/models/userService';
+const user = new User()
+import PermisoService from '@/models/permisoService'; // NUEVO
+const permisoService = new PermisoService(); // NUEVO
+
 export default {
   data() {
     return {
@@ -12,8 +15,10 @@ export default {
         email: '',
         password: '',
         idOficina: null,
+        idRol: null, // NUEVO
       },
       oficinas: [],
+      roles: [], // NUEVO
       error: null,
       exito: null,
     };
@@ -22,13 +27,19 @@ export default {
     // Cargar oficinas desde el backend
     async cargarOficinas() {
       try {
-        this.oficinas = await oficinas.getAllOficinas();
-      } catch (error) {
-    console.error('Error al cargar oficinas:', error); // ✅ Manejo del error
-    this.error = error.message || 'No se pudieron cargar las oficinas.';
-  }
-    },
+        // Cargar oficinas y roles en paralelo
+        const [oficinasData, rolesData] = await Promise.all([
+          oficinas.getAllOficinas(),
+          permisoService.getAllRoles()
+        ]);
 
+        this.oficinas = oficinasData.data || oficinasData || [];
+        this.roles = rolesData.data || rolesData || [];
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+        this.error = error.message || 'No se pudieron cargar los datos.';
+      }
+    },
     // Validación del formulario
     validarFormulario() {
       this.error = null;
@@ -61,6 +72,11 @@ export default {
         return false;
       }
 
+      if (!this.usuario.idRol) {
+        this.error = "Debe seleccionar un rol.";
+        return false;
+      }
+
       return true;
     },
 
@@ -80,11 +96,12 @@ export default {
           email: '',
           password: '',
           idOficina: null,
+          idRol: null, // NUEVO
         };
 
         // Redireccionar tras 2 segundos
         setTimeout(() => {
-          this.$router.push('/login');
+          this.$router.push('/calendario');
         }, 2000);
       } catch (err) {
         this.error = err.message || 'Error al registrar el usuario.';
@@ -119,54 +136,33 @@ export default {
           <!-- Campo Nombre -->
           <div>
             <label for="nombre" class="block text-gray-700 font-medium mb-1">Nombre</label>
-            <input
-              v-model="usuario.nombre"
-              type="text"
-              class="w-full p-2 border rounded"
-              placeholder="Nombre"
-            />
+            <input v-model="usuario.nombre" type="text" class="w-full p-2 border rounded" placeholder="Nombre" />
           </div>
 
           <!-- Campo Apellido -->
           <div>
             <label for="apellido" class="block text-gray-700 font-medium mb-1">Apellido</label>
-            <input
-              v-model="usuario.apellido"
-              type="text"
-              class="w-full p-2 border rounded"
-              placeholder="Apellido"
-            />
+            <input v-model="usuario.apellido" type="text" class="w-full p-2 border rounded" placeholder="Apellido" />
           </div>
 
           <!-- Campo Email -->
           <div>
             <label for="email" class="block text-gray-700 font-medium mb-1">Email</label>
-            <input
-              v-model="usuario.email"
-              type="email"
-              class="w-full p-2 border rounded"
-              placeholder="Correo electrónico"
-            />
+            <input v-model="usuario.email" type="email" class="w-full p-2 border rounded"
+              placeholder="Correo electrónico" />
           </div>
 
           <!-- Campo Contraseña -->
           <div>
             <label for="password" class="block text-gray-700 font-medium mb-1">Contraseña</label>
-            <input
-              v-model="usuario.password"
-              type="password"
-              class="w-full p-2 border rounded"
-              placeholder="Contraseña"
-            />
+            <input v-model="usuario.password" type="password" class="w-full p-2 border rounded"
+              placeholder="Contraseña" />
           </div>
 
           <!-- Selección de Oficina -->
           <div>
             <label for="idOficina" class="block text-gray-700 font-medium mb-1">Oficina</label>
-            <select
-              v-model="usuario.idOficina"
-              class="w-full p-2 border rounded"
-            >
+            <select v-model="usuario.idOficina" class="w-full p-2 border rounded">
               <option disabled value="">Seleccione una oficina</option>
               <option v-for="oficina in oficinas" :key="oficina.id" :value="oficina.id">
                 {{ oficina.nombre }}
@@ -174,11 +170,21 @@ export default {
             </select>
           </div>
 
+          
+                  <!-- Selección de Rol -->
+
+          <div>
+            <label for="idRol" class="block text-gray-700 font-medium mb-1">Rol</label>
+            <select v-model="usuario.idRol" class="w-full p-2 border rounded">
+              <option disabled value="">Seleccione un rol</option>
+              <option v-for="rol in roles" :key="rol.id" :value="rol.id">
+                {{ rol.nombre }}
+              </option>
+            </select>
+          </div>
+
           <!-- Botón de registro -->
-          <button
-            type="submit"
-            class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-          >
+          <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
             Registrarse
           </button>
         </form>

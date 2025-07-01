@@ -640,7 +640,6 @@ export default {
     eliminarEventoConfirmado() {
       if (this.eventoEliminarId && this.fechaEliminar) {
         this.$emit("eliminar-evento", this.eventoEliminarId, this.fechaEliminar);
-        console.log(`Eliminando evento ${this.eventoEliminarId} de fecha ${this.fechaEliminar}`);
       }
       this.cerrarModalConfirmacion();
     },

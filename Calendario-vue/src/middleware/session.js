@@ -9,21 +9,34 @@ class Session {
     constructor(vueContext) {
         this.context = vueContext
         // this.user = this.context.$cookies.get(DEFAULT_SESSION_VAR)
-        if (this.user == null) {
+      /*   if (this.user == null) {
             this.clearCookiesAndStorage()
             return
         }
         this.userData = localStorage.getItem(DEFAULT_SESSION_VAR)
         this.user = this.userData ? JSON.parse(this.userData) : null
+    } */
+
+     this.userData = localStorage.getItem(DEFAULT_SESSION_VAR)
+        this.user = this.userData ? JSON.parse(this.userData) : null
+        
+        // Solo limpiar si efectivamente no hay usuario
+        if (this.user == null) {
+            this.clearCookiesAndStorage()
+        }
     }
     clearCookiesAndStorage() {
         // this.context.$cookies.remove(DEFAULT_SESSION_VAR)
         localStorage.removeItem(DEFAULT_SESSION_VAR)
+         this.user = null
+        this.userData = null
+        
     }
     assignUser(user) {
         // this.context.$cookies.set(DEFAULT_SESSION_VAR, user.cve, "1h")
         localStorage.setItem(DEFAULT_SESSION_VAR, JSON.stringify(user))
         this.user = user
+         this.userData = JSON.stringify(user)
     }
     static GetSession() {
         const _session = localStorage.getItem(DEFAULT_SESSION_VAR)

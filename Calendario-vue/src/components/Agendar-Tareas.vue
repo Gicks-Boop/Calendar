@@ -276,6 +276,10 @@ export default {
     'nuevoEvento.fechaInicio'() {
       this.validarFechas();
     },
+
+    'nuevoEvento.fechaFin'() {
+      this.validarFechas();
+    },
   },
 
   methods: {
@@ -356,13 +360,26 @@ export default {
       return `${year}-${month}-${day}T${hours}:${minutes}`;
     },
 
-    validarFechas() {
-      if (this.nuevoEvento.fechaInicio && !this.nuevoEvento.fechaFin) {
+   validarFechas() {
+      const ahora = new Date();
+      
+      if (this.nuevoEvento.fechaInicio) {
         const fechaInicio = new Date(this.nuevoEvento.fechaInicio);
-        const fechaFin = new Date(fechaInicio);
-        fechaFin.setHours(fechaInicio.getHours() + 1);
-
-        this.nuevoEvento.fechaFin = this.formatearFechaParaInput(fechaFin);
+        
+        // Auto-ajustar si es en el pasado
+        if (fechaInicio < ahora) {
+          const nuevaFecha = new Date();
+          nuevaFecha.setHours(nuevaFecha.getHours() + 1, 0, 0, 0);
+          this.nuevoEvento.fechaInicio = this.formatearFechaParaInput(nuevaFecha);
+          this.$emit('error', 'Fecha ajustada: No se pueden crear eventos en el pasado');
+        }
+        
+        // Auto-configurar fecha fin si no existe o es inválida
+        if (!this.nuevoEvento.fechaFin || new Date(this.nuevoEvento.fechaFin) <= fechaInicio) {
+          const fechaFin = new Date(this.nuevoEvento.fechaInicio);
+          fechaFin.setHours(fechaFin.getHours() + 1, 0, 0, 0);
+          this.nuevoEvento.fechaFin = this.formatearFechaParaInput(fechaFin);
+        }
       }
     },
 
@@ -376,6 +393,25 @@ export default {
         return;
       }
 
+      // Validaciones adicionales antes de mostrar el diálogo
+      const fechaInicio = new Date(this.nuevoEvento.fechaInicio);
+      const fechaFin = new Date(this.nuevoEvento.fechaFin);
+      const ahora = new Date();
+
+      // Verificar si la fecha de inicio es en el pasado
+      if (fechaInicio < ahora) {
+        this.$emit('error', 'No se pueden crear eventos en el pasado. Por favor selecciona una fecha futura.');
+        return;
+      }
+
+      // Verificar si la fecha de fin es anterior a la de inicio
+      if (fechaFin <= fechaInicio) {
+        this.$emit('error', 'La fecha de fin debe ser posterior a la fecha de inicio.');
+        return;
+      }
+
+      let dialogProgress = null;
+
       try {
         this.guardando = true;
 
@@ -383,41 +419,73 @@ export default {
           titulo: this.nuevoEvento.titulo.trim(),
           categoria: this.nuevoEvento.categoria,
           descripcion: this.nuevoEvento.descripcion.trim(),
-          fechaInicio: new Date(this.nuevoEvento.fechaInicio).toISOString(),
-          fechaFin: new Date(this.nuevoEvento.fechaFin).toISOString(),
+          fechaInicio: fechaInicio.toISOString(),
+          fechaFin: fechaFin.toISOString(),
           usuariosAsignadosIds: this.nuevoEvento.usuariosAsignadosIds || []
         };
 
-        Dialog.show("Espere","Creando Evento",Dialog.type.progress)
+        // Mostrar diálogo de progreso DESPUÉS de las validaciones
+        const mensajeProgress = this.eventoEditar ? "Actualizando evento..." : "Creando evento...";
+        dialogProgress = new Dialog(mensajeProgress, "Procesando", Dialog.type.progress);
+        dialogProgress.open();
 
         let eventoGuardado;
 
         if (this.eventoEditar) {
           eventoGuardado = await eventoService.updateEvento(this.eventoEditar.id, eventoData);
-          Dialog.show("Evento actualizado correctamente","exito",Dialog.type.success)
         } else {
           eventoGuardado = await eventoService.createEventoForCurrentUser(eventoData);
-          Dialog.show("Evento creado correctamente","exito",Dialog.type.success)
-          
         }
+
+        // Cerrar diálogo de progreso antes de mostrar el de éxito
+        if (dialogProgress) {
+          Dialog.hide();
+          dialogProgress = null;
+        }
+
+        // Mostrar mensaje de éxito
+        const mensajeExito = this.eventoEditar ? "Evento actualizado correctamente" : "Evento creado correctamente";
+        const dialogExito = new Dialog(mensajeExito, "Éxito", Dialog.type.success);
+        dialogExito.open();
 
         this.$emit("guardar-evento", eventoGuardado);
 
       } catch (error) {
         console.error('Error al guardar evento:', error);
+        
+        // IMPORTANTE: Cerrar diálogo de progreso si existe
+        if (dialogProgress) {
+          Dialog.hide();
+          dialogProgress = null;
+        }
+
         let mensajeError = 'Error al guardar el evento';
 
         if (error.message.includes('fecha de inicio')) {
           mensajeError = 'La fecha de inicio debe ser anterior a la fecha de fin';
+        } else if (error.message.includes('fecha') && error.message.includes('pasado')) {
+          mensajeError = 'No se pueden crear eventos en el pasado';
         } else if (error.message.includes('Usuario')) {
           mensajeError = 'El usuario seleccionado no es válido';
+        } else if (error.message.includes('USUARIO')) {
+          mensajeError = 'No tienes permisos para crear eventos';
         } else if (error.message) {
           mensajeError = error.message;
         }
 
+        // Mostrar diálogo de error
+        const dialogError = new Dialog(mensajeError, "Error", Dialog.type.error);
+        dialogError.open();
+
         this.$emit('error', mensajeError);
+
       } finally {
         this.guardando = false;
+        
+        // Asegurar que el diálogo de progreso se cierre en cualquier caso
+        if (dialogProgress) {
+          Dialog.hide();
+        }
       }
     },
 

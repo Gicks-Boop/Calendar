@@ -46,9 +46,17 @@
 
         <!-- Opciones simplificadas -->
         <div class="flex-1 px-4 py-2 space-y-3">
+          <button v-if="canUseAdminTools" @click="irARegistro"
+            class="w-full flex items-center justify-center px-4 py-3 text-left rounded-lg text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-colors bg-gray-50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            <span>Registrar Usuario</span>
+          </button>
           <!-- Botón Asignar Basura -->
-          <button v-if="canUseAdminTools"
-           @click="abrirModalBasura"
+          <button v-if="canUseAdminTools" @click="abrirModalBasura"
             class="w-full flex items-center justify-center px-4 py-3 text-left rounded-lg text-gray-700 hover:bg-green-100 hover:text-green-700 transition-colors bg-gray-50">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -59,8 +67,7 @@
           </button>
 
           <!-- Botón Ruleta -->
-          <button  v-if="canUseAdminTools"
-          @click="abrirModalRuleta"
+          <button v-if="canUseAdminTools" @click="abrirModalRuleta"
             class="w-full flex items-center justify-center px-4 py-3 text-left rounded-lg text-gray-700 hover:bg-purple-100 hover:text-purple-700 transition-colors bg-gray-50">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -142,6 +149,12 @@ export default {
     toggleMenu() {
       this.menuAbierto = !this.menuAbierto;
     },
+
+     irARegistro() {
+    console.log('Navegando a registro...');
+    this.menuAbierto = false; // Cerrar menú primero
+    this.$router.push('/registro'); // Navegar
+  },
 
     abrirModalBasura() {
       if (this.$static.BM_GET_USER_ROLE()?.nombre === 'USUARIO') {

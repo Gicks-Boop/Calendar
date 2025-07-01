@@ -86,11 +86,11 @@
             </div>
           </form>
           <!-- Link a registro -->
-          <div class="mt-4 text-center">
+          <!-- <div class="mt-4 text-center">
             <p class="text-sm text-gray-600">¿No tienes una cuenta?
               <router-link to="/registro" class="text-blue-600 hover:underline">Regístrate aquí</router-link>
             </p>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
