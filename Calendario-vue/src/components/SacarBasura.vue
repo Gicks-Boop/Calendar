@@ -403,32 +403,35 @@ export default {
       console.log('Usuario actual:', this.usuarioActual);
     },
 
-    async cargarUsuariosOficina() {
-      try {
-        this.cargandoUsuarios = true;
-        this.errorUsuarios = false;
+   async cargarUsuariosOficina() {
+  try {
+    this.cargandoUsuarios = true;
+    this.errorUsuarios = false;
 
-        const response = await userService.getMyOfficeUsers();
-        this.usuariosOficina = response.data || response || [];
+    const response = await userService.getMyOfficeUsers();
+    
+    // Filtrar usuarios eliminados
+    const usuariosBrutos = response.data || response || [];
+    this.usuariosOficina = usuariosBrutos.filter(usuario => !usuario.fechaDelete);
 
-        console.log('Usuarios de oficina cargados:', this.usuariosOficina);
+    console.log('Usuarios activos de oficina cargados:', this.usuariosOficina);
 
-        // Auto-seleccionar al usuario actual
-        if (this.usuarioActual && this.usuariosOficina.length > 0) {
-          const usuarioActualEnLista = this.usuariosOficina.find(u => u.id === this.usuarioActual.id);
-          if (usuarioActualEnLista && !this.usuariosSeleccionados.includes(this.usuarioActual.id)) {
-            this.usuariosSeleccionados.push(this.usuarioActual.id);
-          }
-        }
-
-      } catch (error) {
-        console.error('Error al cargar usuarios de oficina:', error);
-        this.errorUsuarios = true;
-        this.usuariosOficina = [];
-      } finally {
-        this.cargandoUsuarios = false;
+    // Auto-seleccionar al usuario actual si está activo
+    if (this.usuarioActual && this.usuariosOficina.length > 0) {
+      const usuarioActualEnLista = this.usuariosOficina.find(u => u.id === this.usuarioActual.id);
+      if (usuarioActualEnLista && !this.usuariosSeleccionados.includes(this.usuarioActual.id)) {
+        this.usuariosSeleccionados.push(this.usuarioActual.id);
       }
-    },
+    }
+
+  } catch (error) {
+    console.error('Error al cargar usuarios de oficina:', error);
+    this.errorUsuarios = true;
+    this.usuariosOficina = [];
+  } finally {
+    this.cargandoUsuarios = false;
+  }
+},
 
     esUsuarioActual(usuario) {
       return this.usuarioActual && this.usuarioActual.id === usuario.id;
@@ -571,11 +574,7 @@ export default {
       fechas: this.asignaciones.map(a => a.fecha),
       fallidos: resultado.fallidos.length
     });
-    
-    // Limpiar estado después del éxito
-    this.asignaciones = [];
-    this.usuariosSeleccionados = [];
-    
+      
   } catch (error) {
     console.error('Error al guardar asignaciones:', error);
     
@@ -590,223 +589,286 @@ export default {
 },
 
     exportarPDF() {
-      if (this.asignaciones.length === 0) {
-        alert("No hay asignaciones para exportar.");
-        return;
-      }
+  if (this.asignaciones.length === 0) {
+    alert("No hay asignaciones para exportar.");
+    return;
+  }
 
-      try {
-        // Crear un elemento HTML temporal para renderizar el calendario
-        const element = document.createElement("div");
-        element.style.fontFamily = "Arial, sans-serif";
-        element.style.padding = "15px";
+  try {
+    // Crear un elemento HTML temporal para renderizar el calendario
+    const element = document.createElement("div");
+    element.style.fontFamily = "Arial, sans-serif";
+    element.style.padding = "20px";
+    element.style.backgroundColor = "white";
 
-        const anio = this.anioSeleccionado;
-        const mes = this.mesSeleccionado;
-        const nombreMes = this.meses[mes];
+    const anio = this.anioSeleccionado;
+    const mes = this.mesSeleccionado;
+    const nombreMes = this.meses[mes];
 
-        // Crear mapa de asignaciones por día
-        const asignacionesPorDia = {};
-        this.asignaciones.forEach((asignacion) => {
-          const dia = asignacion.fecha.getDate();
-          asignacionesPorDia[dia] = {
-            nombreUsuario: asignacion.nombreUsuario,
-            color: this.obtenerColorUsuario(asignacion.usuarioId)
-          };
-        });
+    // Crear mapa de asignaciones por día
+    const asignacionesPorDia = {};
+    this.asignaciones.forEach((asignacion) => {
+      const dia = asignacion.fecha.getDate();
+      asignacionesPorDia[dia] = {
+        nombreUsuario: asignacion.nombreUsuario,
+        color: this.obtenerColorUsuario(asignacion.usuarioId)
+      };
+    });
 
-        const diasSemanaCortos = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+    const diasSemanaCortos = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-        // Añadir título
-        element.innerHTML = `
-          <div style="text-align: center; margin-bottom: 15px;">
-            <h1 style="font-size: 22px; margin: 0; color: #1a56db;">${nombreMes.toUpperCase()} ${anio}</h1>
-            <p style="font-size: 14px; margin: 5px 0; color: #666;">Asignación de tareas de basura - ${this.oficinaActual?.nombre || 'Oficina'}</p>
-          </div>
-        `;
+    // Añadir título con mejor estilo
+    element.innerHTML = `
+      <div style="text-align: center; margin-bottom: 25px;">
+        <h1 style="font-size: 28px; margin: 0 0 10px 0; color: #1a56db; font-weight: 700;">
+          ${nombreMes.toUpperCase()} ${anio}
+        </h1>
+        <p style="font-size: 16px; margin: 0; color: #666; font-weight: 400;">
+          Asignación de tareas de basura - ${this.oficinaActual?.nombre || 'Oficina'}
+        </p>
+      </div>
+    `;
 
-        // Crear la estructura del calendario
-        let tablaHTML = `
-          <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-            <thead style="background-color: #4169E1;">
-              <tr>
-                ${diasSemanaCortos
-            .map(
-              (dia) =>
-                `<th style="padding: 8px; color: white; text-align: center; border: 1px solid #ccc;">${dia}</th>`
-            )
-            .join("")}
-              </tr>
-            </thead>
-            <tbody>
-        `;
-
-        // Determinar el primer día del mes
-        const primerDia = new Date(anio, mes, 1);
-        const ultimoDia = new Date(anio, mes + 1, 0);
-        const diasEnMes = ultimoDia.getDate();
-        const diaSemanaPrimerDia = primerDia.getDay();
-
-        let diaActual = 1;
-
-        // Generar filas del calendario
-        for (let i = 0; i < 6; i++) {
-          let filaHTML = '<tr style="height: 90px;">';
-
-          for (let j = 0; j < 7; j++) {
-            if ((i === 0 && j < diaSemanaPrimerDia) || diaActual > diasEnMes) {
-              filaHTML += `<td style="border: 1px solid #ddd; background-color: #f5f5f5;"></td>`;
-            } else {
-              const esDiaActual =
-                diaActual === new Date().getDate() &&
-                mes === new Date().getMonth() &&
-                anio === new Date().getFullYear();
-
-              const fechaActual = new Date(anio, mes, diaActual);
-              const diaSemana = fechaActual.getDay();
-              const esLunesAViernes = diaSemana >= 1 && diaSemana <= 5;
-
-              let fondoCelda = esDiaActual ? "#e3f2fd" : "white";
-              let colorNumero = esDiaActual ? "#1976d2" : "#333";
-
-              const asignacion = asignacionesPorDia[diaActual];
-
-              let personaHTML = "";
-              if (asignacion && esLunesAViernes) {
-                personaHTML = `
-                  <div style="
-                    position: absolute;
-                    bottom: 5px;
-                    left: 0;
-                    right: 0;
+    // Crear la estructura del calendario con mejor diseño
+    let tablaHTML = `
+      <table style="
+        width: 100%; 
+        border-collapse: collapse; 
+        table-layout: fixed;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        overflow: hidden;
+      ">
+        <thead>
+          <tr style="background-color: #3b82f6;">
+            ${diasSemanaCortos
+              .map(
+                (dia) =>
+                  `<th style="
+                    padding: 12px 8px;
+                    color: white;
                     text-align: center;
-                    padding: 2px 0;
-                    background-color: ${asignacion.color}20;
-                    border-top: 2px solid ${asignacion.color};
-                  ">
-                    <span style="
-                      font-size: 10px;
-                      color: ${asignacion.color};
-                      font-weight: 600;
-                      padding: 2px 5px;
-                      border-radius: 3px;
-                      display: inline-block;
-                      max-width: 90%;
-                      white-space: nowrap;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                    ">
-                      ${asignacion.nombreUsuario}
-                    </span>
-                  </div>
-                `;
-              }
+                    font-weight: 600;
+                    font-size: 14px;
+                    letter-spacing: 0.5px;
+                    border-right: 1px solid rgba(255,255,255,0.2);
+                  ">${dia}</th>`
+              )
+              .join("")}
+          </tr>
+        </thead>
+        <tbody>
+    `;
 
-              filaHTML += `
-                <td style="
-                  border: 1px solid #ddd;
-                  vertical-align: top;
-                  background-color: ${fondoCelda};
-                  position: relative;
-                  height: 90px;
-                  padding: 0;
-                ">
-                  <div style="
-                    padding: 5px;
-                    height: 100%;
-                    box-sizing: border-box;
-                    position: relative;
-                  ">
-                    <div style="
-                      font-size: 16px;
-                      font-weight: ${esDiaActual ? "bold" : "normal"};
-                      color: ${colorNumero};
-                      text-align: right;
-                    ">
-                      ${diaActual}
-                    </div>
-                    ${personaHTML}
-                  </div>
-                </td>
-              `;
+    // Determinar el primer día del mes
+    const primerDia = new Date(anio, mes, 1);
+    const ultimoDia = new Date(anio, mes + 1, 0);
+    const diasEnMes = ultimoDia.getDate();
+    const diaSemanaPrimerDia = primerDia.getDay();
 
-              diaActual++;
-            }
+    let diaActual = 1;
+
+    // Generar filas del calendario
+    for (let i = 0; i < 6; i++) {
+      let filaHTML = '<tr>';
+
+      for (let j = 0; j < 7; j++) {
+        if ((i === 0 && j < diaSemanaPrimerDia) || diaActual > diasEnMes) {
+          // Celdas vacías
+          filaHTML += `
+            <td style="
+              border: 1px solid #e5e7eb;
+              background-color: #f9fafb;
+              height: 110px;
+            "></td>
+          `;
+        } else {
+          const esDiaActual =
+            diaActual === new Date().getDate() &&
+            mes === new Date().getMonth() &&
+            anio === new Date().getFullYear();
+
+          const fechaActual = new Date(anio, mes, diaActual);
+          const diaSemana = fechaActual.getDay();
+          const esLunesAViernes = diaSemana >= 1 && diaSemana <= 5;
+          const esDomingo = diaSemana === 0;
+          const esSabado = diaSemana === 6;
+
+          // Colores de fondo diferenciados
+          let fondoCelda = "white";
+          if (esDiaActual) {
+            fondoCelda;
+          } else if (esDomingo || esSabado) {
+            fondoCelda = "#f3f4f6";
           }
 
-          filaHTML += "</tr>";
-          tablaHTML += filaHTML;
+          let colorNumero;
+          if (esDomingo || esSabado) {
+            colorNumero = "#6b7280";
+          }
 
-          if (diaActual > diasEnMes) break;
-        }
+          const asignacion = asignacionesPorDia[diaActual];
 
-        tablaHTML += `
-          </tbody>
-        </table>
-        `;
+          let personaHTML = "";
+          if (asignacion && esLunesAViernes) {
+            // Contenedor mejorado para el nombre con mejor manejo de texto largo
+            personaHTML = `
+              <div style="
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(to top, ${asignacion.color}15 0%, transparent 100%);
+                border-bottom: 3px solid ${asignacion.color};
+                padding: 4px;
+                min-height: 35px;
+                display: flex;
+                align-items: flex-end;
+                justify-content: center;
+              ">
+                <div style="
+                  font-size: 11px;
+                  color: ${asignacion.color};
+                  font-weight: 600;
+                  text-align: center;
+                  line-height: 1.2;
+                  max-width: 100%;
+                  word-wrap: break-word;
+                  overflow-wrap: break-word;
+                  hyphens: auto;
+                  padding: 2px;
+                ">
+                  ${asignacion.nombreUsuario}
+                </div>
+              </div>
+            `;
+          }
 
-        element.innerHTML += tablaHTML;
-
-        // Añadir leyenda con los usuarios
-        let leyendaHTML = `
-          <div style="margin-top: 20px;">
-            <h3 style="font-size: 16px; color: #4169E1; margin-bottom: 8px;">Usuarios asignados para sacar la basura:</h3>
-            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-        `;
-
-        // Añadir cada usuario seleccionado con su color
-        this.usuariosSeleccionados.forEach((usuarioId, index) => {
-          const color = this.obtenerColorUsuario(usuarioId);
-          const nombreUsuario = this.obtenerNombreUsuario(usuarioId);
-          leyendaHTML += `
-            <div style="display: flex; align-items: center;">
-              <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%;
-                    background-color: ${color}; margin-right: 5px;"></span>
-              <span style="font-size: 13px;">${nombreUsuario}</span>
-            </div>
+          filaHTML += `
+            <td style="
+              border: 1px solid #e5e7eb;
+              vertical-align: top;
+              background-color: ${fondoCelda};
+              position: relative;
+              height: 110px;
+              padding: 0;
+              overflow: hidden;
+            ">
+              <div style="
+                padding: 8px;
+                height: 100%;
+                box-sizing: border-box;
+                position: relative;
+              ">
+                <div style="
+                  font-size: 18px;
+                  font-weight: ${esDiaActual ? "700" : "500"};
+                  color: ${colorNumero};
+                  text-align: right;
+                  ${esDiaActual ? `
+                    background-color: #3b82f6;
+                    color: white;
+                    width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin-left: auto;
+                    font-size: 14px;
+                  ` : ''}
+                ">
+                  ${diaActual}
+                </div>
+                ${personaHTML}
+              </div>
+            </td>
           `;
-        });
 
-        leyendaHTML += `
-          </div>
-        </div>
-
-        <div style="margin-top: 15px; text-align: center; font-size: 11px; color: #666;">
-          Generado el ${new Date().toLocaleDateString("es-ES")} - ${this.oficinaActual?.nombre || 'Oficina'}
-        </div>
-        `;
-
-        element.innerHTML += leyendaHTML;
-
-        // Configurar las opciones de html2pdf
-        const options = {
-          margin: 10,
-          filename: `Calendario_Basura_${nombreMes}_${anio}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-          },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        };
-
-        // Generar el PDF
-        html2pdf()
-          .from(element)
-          .set(options)
-          .save()
-          .catch((error) => {
-            console.error("Error durante la generación del PDF:", error);
-            alert("Hubo un error al generar el PDF. Por favor, intenta de nuevo.");
-          });
-      } catch (error) {
-        console.error("Error al generar el PDF:", error);
-        alert("Hubo un error al generar el PDF. Por favor, intenta de nuevo.");
+          diaActual++;
+        }
       }
-    },
 
+      filaHTML += "</tr>";
+      tablaHTML += filaHTML;
+
+      if (diaActual > diasEnMes) break;
+    }
+
+    tablaHTML += `
+        </tbody>
+      </table>
+    `;
+
+    element.innerHTML += tablaHTML;
+
+    // Añadir solo la fecha de generación
+    let footerHTML = `
+      <div style="
+        margin-top: 25px;
+        text-align: center;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+      ">
+        <p style="
+          font-size: 12px;
+          color: #6b7280;
+          margin: 0;
+        ">
+          <strong>Generado el:</strong> ${new Date().toLocaleDateString("es-ES", {
+            day: "numeric",
+            month: "long",
+            year: "numeric"
+          })}
+        </p>
+      </div>
+    `;
+
+    element.innerHTML += footerHTML;
+
+    // Configurar las opciones de html2pdf con mejor calidad
+    const options = {
+      margin: [10, 10, 10, 10],
+      filename: `Calendario_Basura_${nombreMes}_${anio}.pdf`,
+      image: { 
+        type: "jpeg", 
+        quality: 0.98 
+      },
+      html2canvas: {
+        scale: 3,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        letterRendering: true,
+      },
+      jsPDF: { 
+        unit: "mm", 
+        format: "a4", 
+        orientation: "portrait",
+        compress: true
+      },
+      pagebreak: { 
+        mode: ['avoid-all', 'css', 'legacy'] 
+      }
+    };
+
+    // Generar el PDF
+    html2pdf()
+      .from(element)
+      .set(options)
+      .save()
+      .then(() => {
+        console.log("PDF generado exitosamente");
+      })
+      .catch((error) => {
+        console.error("Error durante la generación del PDF:", error);
+        alert("Hubo un error al generar el PDF. Por favor, intenta de nuevo.");
+      });
+  } catch (error) {
+    console.error("Error al generar el PDF:", error);
+    alert("Hubo un error al generar el PDF. Por favor, intenta de nuevo.");
+  }
+},
     formatearFecha(fecha) {
       return fecha.toLocaleDateString("es-ES", {
         day: "2-digit",

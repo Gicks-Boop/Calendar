@@ -79,9 +79,10 @@
 
         <!-- SideBar component -->
         <side-bar :usuario="usuario" @cerrar-sesion="cerrarSesion" @asignar-basura="handleAsignarBasura"
-          @ruleta="handleRuleta">
+          @ruleta="handleRuleta" @usuario-eliminado="handleUsuarioEliminado"
+          @usuario-actualizado="handleUsuarioActualizado">
         </side-bar>
-       
+
 
 
       </div>
@@ -290,7 +291,7 @@ export default {
     return {
       eventos: {},
       cargandoEventos: false,
-      mostrarDetallesEventos: true, 
+      mostrarDetallesEventos: true,
       colorblindMode: false, //Modo para daltónicos
 
       fechaActual: new Date(),
@@ -863,6 +864,22 @@ export default {
       this.eventoEditando = null;
       this.mostrarModalTarea = true;
     },
+    handleUsuarioEliminado(usuario) {
+      console.log("CalendarioMain: Usuario eliminado", usuario);
+
+      // Mostrar mensaje de confirmación
+      this.mostrarMensajeExito(`Usuario ${usuario.name} ${usuario.lastName} eliminado correctamente`);
+
+      // Opcional: Recargar eventos si el usuario eliminado tenía eventos asignados
+      // esto ayudará a refrescar la vista en caso de que hubiera eventos asignados al usuario eliminado
+      this.cargarEventos();
+    },
+    handleUsuarioActualizado(usuario) {
+      console.log("CalendarioMain: Usuario actualizado", usuario);
+      this.mostrarMensajeExito(`Usuario ${usuario.nombre} ${usuario.apellido} actualizado correctamente`);
+      // Opcional: recargar eventos si es necesario
+      this.cargarEventos();
+    }
   },
 
   // CICLO DE VIDA: CARGAR EVENTOS AL INICIAR

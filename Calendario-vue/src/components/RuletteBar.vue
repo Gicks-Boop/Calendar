@@ -721,23 +721,26 @@ export default {
     },
 
     async cargarUsuariosDeOficina() {
-      try {
-        this.cargandoUsuarios = true;
-        this.errorUsuarios = false;
-        
-        const response = await userService.getMyOfficeUsers();
-        this.usuariosOficina = response.data || response || [];
-        
-        console.log('Usuarios de oficina cargados:', this.usuariosOficina);
-        
-      } catch (error) {
-        console.error('Error al cargar usuarios de oficina:', error);
-        this.errorUsuarios = true;
-        this.usuariosOficina = [];
-      } finally {
-        this.cargandoUsuarios = false;
-      }
-    },
+  try {
+    this.cargandoUsuarios = true;
+    this.errorUsuarios = false;
+    
+    const response = await userService.getMyOfficeUsers();
+    
+    // Filtrar usuarios eliminados
+    const usuariosBrutos = response.data || response || [];
+    this.usuariosOficina = usuariosBrutos.filter(usuario => !usuario.fechaDelete);
+    
+    console.log('Usuarios activos de oficina cargados:', this.usuariosOficina);
+    
+  } catch (error) {
+    console.error('Error al cargar usuarios de oficina:', error);
+    this.errorUsuarios = true;
+    this.usuariosOficina = [];
+  } finally {
+    this.cargandoUsuarios = false;
+  }
+},
 
     agregarTodosUsuarios() {
       if (this.usuariosOficina.length === 0) {

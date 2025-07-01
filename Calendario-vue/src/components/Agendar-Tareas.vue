@@ -287,8 +287,12 @@ export default {
       try {
         this.cargandoUsuarios = true;
         const response = await userService.getMyOfficeUsers();
-        this.usuarios = response.data || response;
-        console.log("Usuarios de la oficina cargados:", this.usuarios);
+        
+        // Filtrar usuarios eliminados (que tengan fechaDelete)
+        const usuariosBrutos = response.data || response;
+        this.usuarios = usuariosBrutos.filter(usuario => !usuario.fechaDelete);
+        
+        console.log("Usuarios activos de la oficina cargados:", this.usuarios);
       } catch (error) {
         console.error('Error al cargar usuarios de la oficina:', error);
         this.$emit('error', 'Error al cargar la lista de usuarios');
