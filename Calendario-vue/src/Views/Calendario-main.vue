@@ -312,6 +312,7 @@ export default {
         { nombre: "Trabajo", valor: "trabajo", color: "#4299e1" },
         { nombre: "Cumpleaños", valor: "cumpleaños", color: "#e64e81" },
         { nombre: "Basura", valor: "basura", color: "#8a4e03" },
+        { nombre: "Limpiar Refri", valor: "refri", color: "#38b2ac" },
         { nombre: "Otro", valor: "otro", color: "#9f7aea" },
       ],
 
@@ -320,6 +321,7 @@ export default {
         { nombre: "Trabajo", valor: "trabajo", color: "#0066CC" }, // Azul fuerte
         { nombre: "Cumpleaños", valor: "cumpleaños", color: "#FF6600" }, // Naranja
         { nombre: "Basura", valor: "basura", color: "#006600" }, // Verde oscuro
+        { nombre: "Limpiar refri", valor: "refri", color: "#999900" }, 
         { nombre: "Otro", valor: "otro", color: "#660066" }, // Morado oscuro
       ],
 
@@ -328,6 +330,7 @@ export default {
         trabajo: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>',
         cumpleaños: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h1.428M19 12a2 2 0 100-4H18.57"/>',
         basura: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>',
+        refri: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 2h6a1 1 0 011 1v18a1 1 0 01-1 1H9a1 1 0 01-1-1V3a1 1 0 011-1zm0 10h6"/>',
         otro: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>'
       },
       userInfo: {},

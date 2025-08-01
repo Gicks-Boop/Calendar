@@ -44,7 +44,7 @@
               <div>
                 <p class="font-medium text-gray-900">{{ usuario.nombre }} {{ usuario.apellido }}</p>
                 <p class="text-sm text-gray-600">{{ usuario.email }}</p>
-                <p class="text-xs text-gray-500">{{ usuario.oficina || 'Sin oficina' }}</p>
+                <!-- <p class="text-xs text-gray-500">{{ usuario.oficina || 'Sin oficina' }}</p> -->
               </div>
               <div class="flex items-center">
                 <span class="text-xs px-2 py-1 rounded-full"

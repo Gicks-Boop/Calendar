@@ -202,7 +202,8 @@ export default {
         { nombre: "Trabajo", valor: "trabajo", color: "#4299e1" },
         { nombre: "Cumpleaños", valor: "cumpleaños", color: "#e64e81" },
         { nombre: "Basura", valor: "basura", color: "#8a4e03" },
-        { nombre: "Otro", valor: "otro", color: "#9f7aea" },
+        { nombre: "Limpiar Refri", valor: "refri", color: "#8a4e03" },
+        { nombre: "Otro", valor: "otro", color: "#9f7aea" }
       ],
     },
   },

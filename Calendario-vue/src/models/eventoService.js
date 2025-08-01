@@ -440,31 +440,59 @@ async createEventosBasuraRapido(asignaciones) {
     throw new Error("Usuario no autenticado");
   }
 
-  // Crear todas las promesas de una vez (ejecución en paralelo)
-  const promesasEventos = asignaciones.map(asignacion => {
-    const eventoData = {
-      titulo: `Sacar basura`,
-      descripcion: `Tarea asignada a ${asignacion.nombreUsuario}`,
-      categoria: 'basura',
+  const promesasEventos = [];
+
+asignaciones.forEach(asignacion => {
+  // Evento principal: sacar basura
+  const eventoBasura = {
+    titulo: `Sacar basura`,
+    descripcion: `Tarea asignada a ${asignacion.nombreUsuario}`,
+    categoria: 'basura',
+    fechaInicio: new Date(
+      asignacion.fecha.getFullYear(), 
+      asignacion.fecha.getMonth(), 
+      asignacion.fecha.getDate(), 
+      18, 0
+    ).toISOString(),
+    fechaFin: new Date(
+      asignacion.fecha.getFullYear(), 
+      asignacion.fecha.getMonth(), 
+      asignacion.fecha.getDate(), 
+      18, 30
+    ).toISOString(),
+    usuariosAsignadosIds: [asignacion.usuarioId],
+    creadorId: userData.id,
+    oficinaNombre: userData.oficina,
+  };
+
+  promesasEventos.push(this.createEvento(eventoBasura));
+
+  // Evento adicional si es miércoles
+  if (asignacion.fecha.getDay() === 3) {
+    const eventoRefri = {
+      titulo: `Limpiar refrigerador`,
+      descripcion: `Tarea especial asignada a ${asignacion.nombreUsuario} (miércoles)`,
+      categoria: 'refri',
       fechaInicio: new Date(
         asignacion.fecha.getFullYear(), 
         asignacion.fecha.getMonth(), 
         asignacion.fecha.getDate(), 
-        18, 0
+        17, 30
       ).toISOString(),
       fechaFin: new Date(
         asignacion.fecha.getFullYear(), 
         asignacion.fecha.getMonth(), 
         asignacion.fecha.getDate(), 
-        18, 30
+        18, 0
       ).toISOString(),
       usuariosAsignadosIds: [asignacion.usuarioId],
       creadorId: userData.id,
       oficinaNombre: userData.oficina,
     };
 
-    return this.createEvento(eventoData);
-  });
+    promesasEventos.push(this.createEvento(eventoRefri));
+  }
+});
 
   // Ejecutar TODAS las promesas en paralelo con Promise.allSettled
   // (más robusto que Promise.all porque no falla si uno falla)
