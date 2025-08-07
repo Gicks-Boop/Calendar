@@ -10,7 +10,7 @@
     </button>
 
     <!-- Menú desplegable -->
-    <div class="fixed top-0 right-0 h-full bg-white shadow-xl z-30 transition-all duration-300 ease-in-out"
+    <div class="fixed top-0 left-0 h-full bg-white shadow-xl z-30 transition-all duration-300 ease-in-out"
       :class="menuAbierto ? 'w-64' : 'w-0 overflow-hidden'">
       <div class="pt-20 h-full flex flex-col">
         <!-- Información del usuario -->

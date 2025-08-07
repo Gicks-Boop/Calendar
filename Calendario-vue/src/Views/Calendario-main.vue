@@ -1,14 +1,23 @@
 <template>
   <div
     class="w-full h-screen flex flex-col bg-gradient-to-br from-blue-50 to-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+    <div class="bg-gray-50 border-t border-gray-200 p-3 text-center text-sm text-gray-600">
+      <span class="font-medium">Hoy: </span>{{ fechaFormateada }}
+      <span class="ml-4 text-xs">
+      </span>
+    </div>
     <!-- Componente VisualizadorTareas -->
     <visualizador-tareas :eventos="eventos" :categorias="categoriasActivas" :permiso-service="permisoService"
       @editar-evento="editarEvento" @eliminar-evento="eliminarEventoYPropagar"></visualizador-tareas>
-
     <!-- Header con botón de menú -->
     <div
-      class="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-blue-500 to-indigo-600 border-b border-blue-600">
-      <div class="flex items-center">
+      class="w-full flex flex-wrap items-center justify-between gap-y-2 gap-x-4 px-4 sm:px-6 py-3 sm:py-5 bg-gradient-to-r from-blue-500 to-indigo-600 border-b border-blue-600 text-white">
+      <div class="flex items-center flex-wrap gap-x-2">
+         <!-- SideBar component -->
+        <side-bar :usuario="usuario" @cerrar-sesion="cerrarSesion" @asignar-basura="handleAsignarBasura"
+          @ruleta="handleRuleta" @usuario-eliminado="handleUsuarioEliminado"
+          @usuario-actualizado="handleUsuarioActualizado">
+        </side-bar>
         <button @click="prevMonth"
           class="p-2 rounded-full hover:bg-blue-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white text-white"
           aria-label="Mes anterior">
@@ -17,7 +26,7 @@
           </svg>
         </button>
 
-        <h2 class="text-xl md:text-2xl font-bold text-white mx-2 text-center tracking-wide">
+        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-white mx-2 text-center tracking-wide whitespace-nowrap truncate max-w-[180px] sm:max-w-none">
           {{ mesActual.toUpperCase() }} {{ añoActual }}
         </h2>
 
@@ -31,7 +40,8 @@
       </div>
 
       <!-- Botón de refrescar eventos y info del usuario -->
-      <div class="flex items-center space-x-2">
+      <div class="flex items-center flex-wrap justify-center sm:justify-end gap-x-2 gap-y-2 w-full">
+
         <!-- Toggle para colores daltónicos -->
         <button @click="toggleColorblindMode"
           class="p-2 rounded-full hover:bg-blue-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white text-white"
@@ -58,7 +68,7 @@
         </button>
 
         <!-- Indicador de oficina -->
-        <div class="text-white text-sm bg-blue-700 px-3 py-1 rounded-full">
+        <div class="text-white text-sm bg-blue-700 px-3 py-1 rounded-full whitespace-nowrap truncate max-w-[140px] sm:max-w-none">
           <span class="font-medium">{{ userInfo.oficina || 'Sin oficina' }}</span>
           <span v-if="uiPermissions.user.role" class="ml-2 text-xs opacity-75">
             ({{ uiPermissions.user.role.nombre }})
@@ -76,15 +86,6 @@
         </button>
 
         <notificacion-calendar />
-
-        <!-- SideBar component -->
-        <side-bar :usuario="usuario" @cerrar-sesion="cerrarSesion" @asignar-basura="handleAsignarBasura"
-          @ruleta="handleRuleta" @usuario-eliminado="handleUsuarioEliminado"
-          @usuario-actualizado="handleUsuarioActualizado">
-        </side-bar>
-
-
-
       </div>
     </div>
 
@@ -217,19 +218,6 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <div class="bg-gray-50 border-t border-gray-200 p-3 text-center text-sm text-gray-600">
-      <span class="font-medium">Hoy: </span>{{ fechaFormateada }}
-      <span class="ml-4 text-xs">
-        <button @click="mostrarDetallesEventos = !mostrarDetallesEventos"
-          class="text-blue-600 hover:text-blue-800 mr-3">
-          {{ mostrarDetallesEventos ? 'Vista compacta' : 'Vista detallada' }}
-        </button>
-        <button @click="toggleColorblindMode" class="text-blue-600 hover:text-blue-800">
-          {{ colorblindMode ? 'Colores normales' : 'Modo daltónico' }}
-        </button>
-      </span>
     </div>
 
     <!-- Modal de Agendar Tareas -->

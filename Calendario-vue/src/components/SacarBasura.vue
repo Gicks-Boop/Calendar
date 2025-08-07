@@ -1,34 +1,53 @@
 <template>
   <div>
     <!-- Modal para asignar tareas de basura -->
-    <div v-if="mostrarModal"
+    <div
+      v-if="mostrarModal"
       class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 p-4 sm:p-0"
-      :class="{ 'opacity-100': mostrarModal, 'opacity-0': !mostrarModal }" @click.self="cerrarModal">
+      :class="{ 'opacity-100': mostrarModal, 'opacity-0': !mostrarModal }"
+      @click.self="cerrarModal"
+    >
       <!-- Contenedor del modal -->
-      <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl transform overflow-y-auto max-h-[90vh]"
-        :class="{ 'animate-modal-appear': mostrarModal }">
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-3xl transform"
+        :class="{ 'animate-modal-appear': mostrarModal }"
+      >
         <!-- Cabecera del modal -->
         <div
-          class="bg-gradient-to-r from-green-500 to-teal-600 text-white px-4 sm:px-6 py-4 flex justify-between items-center rounded-t-lg sticky top-0 z-10">
+          class="bg-gradient-to-r from-green-500 to-teal-600 text-white px-4 sm:px-6 py-4 flex justify-between items-center rounded-t-lg sticky top-0 z-10"
+        >
           <div>
-            <h3 class="text-base sm:text-lg font-bold">Asignación automática de tareas de basura</h3>
-            <p class="text-sm opacity-90">{{ oficinaActual?.nombre || 'Oficina actual' }}</p>
+            <h3 class="text-base sm:text-lg font-bold">
+              Asignación automática de tareas de basura
+            </h3>
+            <p class="text-sm opacity-90">{{ oficinaActual?.nombre || "Oficina actual" }}</p>
           </div>
           <button @click="cerrarModal" class="text-white hover:text-gray-200 focus:outline-none">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
         <!-- Cuerpo del modal -->
-        <div class="p-4 sm:p-6">
+        <div class="overflow-y-auto max-h-[80vh] p-4 sm:p-6">
           <!-- Explicación -->
           <div class="mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
             <p class="text-gray-700 text-xs sm:text-sm">
               Esta herramienta asignará automáticamente la tarea de sacar la basura entre los
-              usuarios de tu oficina, de lunes a viernes. Selecciona el mes y los usuarios participantes.
+              usuarios de tu oficina, de lunes a viernes. Selecciona el mes y los usuarios
+              participantes.
             </p>
           </div>
 
@@ -38,8 +57,11 @@
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label for="mesSeleccionado" class="block text-sm text-gray-600 mb-1">Mes</label>
-                <select id="mesSeleccionado" v-model="mesSeleccionado"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <select
+                  id="mesSeleccionado"
+                  v-model="mesSeleccionado"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-black bg-white"
+                >
                   <option v-for="(mes, index) in meses" :key="index" :value="index">
                     {{ mes }}
                   </option>
@@ -47,8 +69,11 @@
               </div>
               <div>
                 <label for="anioSeleccionado" class="block text-sm text-gray-600 mb-1">Año</label>
-                <select id="anioSeleccionado" v-model="anioSeleccionado"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <select
+                  id="anioSeleccionado"
+                  v-model="anioSeleccionado"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-black bg-white"
+                >
                   <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">
                     {{ anio }}
                   </option>
@@ -66,21 +91,38 @@
 
               <!-- Botones de selección rápida -->
               <div class="flex space-x-2">
-                <button @click="seleccionarTodosUsuarios"
-                  class="text-sm text-blue-600 hover:text-blue-800 px-2 py-1 rounded" :disabled="cargandoUsuarios">
+                <button
+                  @click="seleccionarTodosUsuarios"
+                  class="text-sm text-blue-600 hover:text-blue-800 px-2 py-1 rounded"
+                  :disabled="cargandoUsuarios"
+                >
                   Todos
                 </button>
-                <button @click="deseleccionarTodosUsuarios"
-                  class="text-sm text-gray-600 hover:text-gray-800 px-2 py-1 rounded" :disabled="cargandoUsuarios">
+                <button
+                  @click="deseleccionarTodosUsuarios"
+                  class="text-sm text-gray-600 hover:text-gray-800 px-2 py-1 rounded"
+                  :disabled="cargandoUsuarios"
+                >
                   Ninguno
                 </button>
-                <button v-if="usuariosSeleccionados.length > 0 || asignaciones.length > 0"
+                <button
+                  v-if="usuariosSeleccionados.length > 0 || asignaciones.length > 0"
                   @click="mostrarConfirmacionLimpiarTodo"
-                  class="text-sm text-red-500 hover:text-red-700 flex items-center px-2 py-1 rounded">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  class="text-sm text-red-500 hover:text-red-700 flex items-center px-2 py-1 rounded"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
                   </svg>
                   Limpiar
                 </button>
@@ -89,45 +131,79 @@
 
             <!-- Loading de usuarios -->
             <div v-if="cargandoUsuarios" class="text-center py-8">
-              <svg class="animate-spin h-8 w-8 mx-auto text-green-500 mb-2" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                </path>
+              <svg
+                class="animate-spin h-8 w-8 mx-auto text-green-500 mb-2"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               <p class="text-gray-600">Cargando usuarios de la oficina...</p>
             </div>
 
             <!-- Error al cargar usuarios -->
             <div v-else-if="errorUsuarios" class="text-center py-8">
-              <svg class="h-8 w-8 mx-auto text-red-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                class="h-8 w-8 mx-auto text-red-500 mb-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <p class="text-red-600 mb-2">Error al cargar usuarios</p>
-              <button @click="cargarUsuariosOficina" class="text-sm text-blue-600 hover:text-blue-800">
+              <button
+                @click="cargarUsuariosOficina"
+                class="text-sm text-blue-600 hover:text-blue-800"
+              >
                 Reintentar
               </button>
             </div>
 
             <!-- Lista de usuarios -->
             <div v-else-if="usuariosOficina.length > 0" class="space-y-2 max-h-60 overflow-y-auto">
-              <div v-for="usuario in usuariosOficina" :key="usuario.id"
+              <div
+                v-for="usuario in usuariosOficina"
+                :key="usuario.id"
                 class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
                 :class="{
                   'border-green-300 bg-green-50': usuariosSeleccionados.includes(usuario.id),
-                  'border-blue-300 bg-blue-50': esUsuarioActual(usuario)
-                }">
+                  'border-blue-300 bg-blue-50': esUsuarioActual(usuario),
+                }"
+              >
                 <div class="flex items-center space-x-3">
-                  <input type="checkbox" :value="usuario.id" v-model="usuariosSeleccionados"
-                    class="rounded border-gray-300 text-green-600 focus:ring-green-500" />
+                  <input
+                    type="checkbox"
+                    :value="usuario.id"
+                    v-model="usuariosSeleccionados"
+                    class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  />
                   <div class="flex-1">
                     <div class="flex items-center space-x-2">
                       <span class="font-medium text-gray-900">
                         {{ usuario.nombre }} {{ usuario.apellido }}
                       </span>
-                      <span v-if="esUsuarioActual(usuario)"
-                        class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                      <span
+                        v-if="esUsuarioActual(usuario)"
+                        class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
+                      >
                         Tú
                       </span>
                     </div>
@@ -136,26 +212,40 @@
                 </div>
 
                 <!-- Indicador de color asignado -->
-                <div v-if="usuariosSeleccionados.includes(usuario.id)"
+                <div
+                  v-if="usuariosSeleccionados.includes(usuario.id)"
                   class="w-6 h-6 rounded-full border-2 border-white shadow-sm"
                   :style="{ backgroundColor: obtenerColorUsuario(usuario.id) }"
-                  :title="`Color asignado: ${obtenerColorUsuario(usuario.id)}`"></div>
+                  :title="`Color asignado: ${obtenerColorUsuario(usuario.id)}`"
+                ></div>
               </div>
             </div>
 
             <!-- Sin usuarios -->
             <div v-else class="text-center py-8 text-gray-500">
-              <svg class="h-8 w-8 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              <svg
+                class="h-8 w-8 mx-auto text-gray-300 mb-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
               </svg>
               <p>No se encontraron usuarios en la oficina</p>
             </div>
 
             <!-- Contador de usuarios seleccionados -->
-            <div v-if="usuariosSeleccionados.length > 0" class="mt-3 text-sm text-gray-600 bg-green-50 p-2 rounded">
-              <span class="font-medium">{{ usuariosSeleccionados.length }}</span> usuario(s) seleccionado(s) para
-              participar
+            <div
+              v-if="usuariosSeleccionados.length > 0"
+              class="mt-3 text-sm text-gray-600 bg-green-50 p-2 rounded"
+            >
+              <span class="font-medium">{{ usuariosSeleccionados.length }}</span> usuario(s)
+              seleccionado(s) para participar
             </div>
           </div>
 
@@ -165,12 +255,23 @@
               <h4 class="font-medium text-gray-700">Vista previa de asignaciones:</h4>
 
               <!-- Botón para limpiar asignaciones -->
-              <button @click="limpiarAsignaciones"
-                class="text-sm text-orange-500 hover:text-orange-700 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              <button
+                @click="limpiarAsignaciones"
+                class="text-sm text-orange-500 hover:text-orange-700 flex items-center"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
                 </svg>
                 Limpiar asignaciones
               </button>
@@ -182,47 +283,73 @@
                   <thead class="bg-gray-50">
                     <tr>
                       <th
-                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
                         Fecha
                       </th>
                       <th
-                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
                         Día
                       </th>
                       <th
-                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
                         Usuario asignado
                       </th>
                     </tr>
                   </thead>
                   <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="(asignacion, index) in asignaciones" :key="index" class="hover:bg-gray-50">
-                      <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700">
+                    <tr
+                      v-for="(asignacion, index) in asignaciones"
+                      :key="index"
+                      class="hover:bg-gray-50"
+                    >
+                      <td
+                        class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700"
+                      >
                         {{ formatearFecha(asignacion.fecha) }}
                       </td>
-                      <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700">
+                      <td
+                        class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-700"
+                      >
                         {{ obtenerDiaSemana(asignacion.fecha) }}
                       </td>
                       <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                         <div class="relative">
                           <!-- Select para cambiar el usuario asignado -->
-                          <select v-model="asignaciones[index].usuarioId" @change="actualizarNombreUsuario(index)"
+                          <select
+                            v-model="asignaciones[index].usuarioId"
+                            @change="actualizarNombreUsuario(index)"
                             class="appearance-none w-full text-xs sm:text-sm font-medium px-3 py-2 pr-8 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                             :style="{
                               backgroundColor: obtenerColorUsuario(asignacion.usuarioId) + '20',
-                              borderColor: obtenerColorUsuario(asignacion.usuarioId)
-                            }">
-                            <option v-for="usuarioId in usuariosSeleccionados" :key="usuarioId" :value="usuarioId">
+                              borderColor: obtenerColorUsuario(asignacion.usuarioId),
+                            }"
+                          >
+                            <option
+                              v-for="usuarioId in usuariosSeleccionados"
+                              :key="usuarioId"
+                              :value="usuarioId"
+                            >
                               {{ obtenerNombreUsuario(usuarioId) }}
                             </option>
                           </select>
                           <!-- Icono de selector -->
-                          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                            <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                              fill="currentColor">
-                              <path fill-rule="evenodd"
+                          <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2"
+                          >
+                            <svg
+                              class="h-4 w-4 text-gray-400"
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
                                 d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                clip-rule="evenodd" />
+                                clip-rule="evenodd"
+                              />
                             </svg>
                           </div>
                         </div>
@@ -233,89 +360,147 @@
               </div>
             </div>
           </div>
+        </div>
+        <!-- Botones de acción -->
+        <div class="sticky bottom-0 bg-white border-t px-4 sm:px-6 py-4 z-10">
+          <div class="flex flex-col sm:flex-row sm:justify-between items-stretch gap-4 sm:gap-6">
+            <!-- Botones de acciones principales -->
+            <div class="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 flex-1 min-w-0">
+              <!-- Botón Generar Asignaciones -->
+              <button
+                @click="generarAsignaciones"
+                class="flex items-center justify-center gap-2 w-full sm:w-auto min-w-[120px] px-4 py-2 rounded-lg bg-blue-600 text-white font-medium shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                :disabled="usuariosSeleccionados.length === 0 || cargandoUsuarios"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
 
-          <!-- Botones de acción -->
-          <div class="flex flex-col sm:flex-row flex-wrap justify-between gap-2 mt-6">
-            <div class="flex flex-wrap gap-2">
-              <button @click="generarAsignaciones"
-                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="usuariosSeleccionados.length === 0 || cargandoUsuarios">
-                <span class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>Generar asignaciones
-                  <span class="hidden xs:inline">Generar asignaciones</span>
-                  <span class="xs:hidden">Generar</span>
-                </span>
+                <span class="inline xs:hidden">Generar</span>
+                <span class="xs:inline">Generar asignaciones</span>
               </button>
 
-              <button @click="guardarAsignaciones"
-                class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                :disabled="asignaciones.length === 0 || guardandoEventos">
-                <span class="flex items-center">
-                  <svg v-if="guardandoEventos" class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                    </path>
-                  </svg>
-                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                  </svg>Guardar en el calendario
-                  <span class="hidden xs:inline">
-                    {{ guardandoEventos ? 'Guardando...' : 'Guardar en calendario' }}
-                  </span>
-                  <span class="xs:hidden">
-                    {{ guardandoEventos ? 'Guardando...' : 'Guardar' }}
-                  </span>
-                </span>
+              <!-- Botón Guardar en Calendario -->
+              <button
+                @click="guardarAsignaciones"
+                class="flex items-center justify-center gap-2 w-full sm:w-auto min-w-[130px] px-4 py-2 rounded-lg bg-green-600 text-white font-medium shadow-md hover:bg-green-700 hover:shadow-lg transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                :disabled="asignaciones.length === 0 || guardandoEventos"
+              >
+                <svg
+                  v-if="guardandoEventos"
+                  class="animate-spin h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <svg
+                  v-else
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                  />
+                </svg>
+                <span class="xs:inline">{{
+                  guardandoEventos ? "Guardando..." : "Guardar en calendario"
+                }}</span>
+                <span class="inline sm:hidden">{{
+                  guardandoEventos ? "Guardando..." : "Guardar"
+                }}</span>
               </button>
             </div>
 
-            <button @click="exportarPDF"
-              class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              :disabled="asignaciones.length === 0">
-              <span class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>Guardar PDF
-                <span class="hidden xs:inline">Exportar PDF</span>
-                <span class="xs:hidden">PDF</span>
-              </span>
-            </button>
+            <!-- Botón Exportar PDF -->
+            <div class="flex justify-end">
+              <button
+                @click="exportarPDF"
+                class="flex items-center justify-center gap-2 min-w-[130px] px-4 py-2 rounded-lg bg-purple-600 text-white font-medium shadow-md hover:bg-purple-700 hover:shadow-lg transition-all duration-200 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                :disabled="asignaciones.length === 0"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <span class="xs:inline">Exportar PDF</span>
+                <span class="inline sm:hidden">PDF</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Modal de confirmación para limpiar todo -->
-    <div v-if="mostrarModalConfirmacion"
+    <div
+      v-if="mostrarModalConfirmacion"
       class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[60] transition-all duration-300"
       :class="{ 'opacity-100': mostrarModalConfirmacion, 'opacity-0': !mostrarModalConfirmacion }"
-      @click.self="cerrarModalConfirmacion">
-      <div class="bg-white rounded-lg shadow-xl p-6 w-80 transform transition-all duration-300 ease-out origin-center"
+      @click.self="cerrarModalConfirmacion"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl p-6 w-80 transform transition-all duration-300 ease-out origin-center"
         :class="{
           'scale-100 opacity-100 animate-appear': mostrarModalConfirmacion,
           'scale-90 opacity-0': !mostrarModalConfirmacion,
-        }">
+        }"
+      >
         <h3 class="text-lg font-bold text-gray-900 mb-4">Confirmar</h3>
         <p class="text-gray-600 mb-6">
-          ¿Estás seguro de que deseas eliminar todas las selecciones y asignaciones? Esta acción no se
-          puede deshacer.
+          ¿Estás seguro de que deseas eliminar todas las selecciones y asignaciones? Esta acción no
+          se puede deshacer.
         </p>
         <div class="flex justify-end space-x-3">
-          <button @click="cerrarModalConfirmacion"
-            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-all duration-200">
+          <button
+            @click="cerrarModalConfirmacion"
+            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-all duration-200"
+          >
             Cancelar
           </button>
-          <button @click="limpiarTodo"
-            class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-200">
+          <button
+            @click="limpiarTodo"
+            class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-200"
+          >
             Eliminar todo
           </button>
         </div>
@@ -326,9 +511,9 @@
 
 <script>
 import html2pdf from "html2pdf.js";
-import UserService from '@/models/userService';
-import EventoService from '@/models/eventoService';
-import * as Static from '@/middleware/static';
+import UserService from "@/models/userService";
+import EventoService from "@/models/eventoService";
+import * as Static from "@/middleware/static";
 import Dialog from "./dialog/dialog";
 
 const userService = new UserService();
@@ -365,13 +550,35 @@ export default {
       mesSeleccionado: new Date().getMonth(),
       anioSeleccionado: new Date().getFullYear(),
       meses: [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+        "Enero",
+        "Febrero",
+        "Marzo",
+        "Abril",
+        "Mayo",
+        "Junio",
+        "Julio",
+        "Agosto",
+        "Septiembre",
+        "Octubre",
+        "Noviembre",
+        "Diciembre",
       ],
       colores: [
-        "#4299E1", "#48BB78", "#ED8936", "#9F7AEA", "#F56565",
-        "#38B2AC", "#ED64A6", "#667EEA", "#F6AD55", "#FC8181",
-        "#4FD1C7", "#63B3ED", "#F687B3", "#A78BFA", "#34D399"
+        "#4299E1",
+        "#48BB78",
+        "#ED8936",
+        "#9F7AEA",
+        "#F56565",
+        "#38B2AC",
+        "#ED64A6",
+        "#667EEA",
+        "#F6AD55",
+        "#FC8181",
+        "#4FD1C7",
+        "#63B3ED",
+        "#F687B3",
+        "#A78BFA",
+        "#34D399",
       ],
     };
   },
@@ -388,8 +595,8 @@ export default {
           this.inicializar();
         }
       },
-      immediate: true
-    }
+      immediate: true,
+    },
   },
   methods: {
     async inicializar() {
@@ -400,45 +607,46 @@ export default {
     cargarUsuarioActual() {
       this.usuarioActual = Static.BM_GET_USER_DATA();
       this.oficinaActual = this.usuarioActual?.oficina;
-      console.log('Usuario actual:', this.usuarioActual);
+      console.log("Usuario actual:", this.usuarioActual);
     },
 
-   async cargarUsuariosOficina() {
-  try {
-    this.cargandoUsuarios = true;
-    this.errorUsuarios = false;
+    async cargarUsuariosOficina() {
+      try {
+        this.cargandoUsuarios = true;
+        this.errorUsuarios = false;
 
-    const response = await userService.getMyOfficeUsers();
-    
-    // Filtrar usuarios eliminados
-    const usuariosBrutos = response.data || response || [];
-    this.usuariosOficina = usuariosBrutos.filter(usuario => !usuario.fechaDelete);
+        const response = await userService.getMyOfficeUsers();
 
-    console.log('Usuarios activos de oficina cargados:', this.usuariosOficina);
+        // Filtrar usuarios eliminados
+        const usuariosBrutos = response.data || response || [];
+        this.usuariosOficina = usuariosBrutos.filter((usuario) => !usuario.fechaDelete);
 
-    // Auto-seleccionar al usuario actual si está activo
-    if (this.usuarioActual && this.usuariosOficina.length > 0) {
-      const usuarioActualEnLista = this.usuariosOficina.find(u => u.id === this.usuarioActual.id);
-      if (usuarioActualEnLista && !this.usuariosSeleccionados.includes(this.usuarioActual.id)) {
-        this.usuariosSeleccionados.push(this.usuarioActual.id);
+        console.log("Usuarios activos de oficina cargados:", this.usuariosOficina);
+
+        // Auto-seleccionar al usuario actual si está activo
+        if (this.usuarioActual && this.usuariosOficina.length > 0) {
+          const usuarioActualEnLista = this.usuariosOficina.find(
+            (u) => u.id === this.usuarioActual.id
+          );
+          if (usuarioActualEnLista && !this.usuariosSeleccionados.includes(this.usuarioActual.id)) {
+            this.usuariosSeleccionados.push(this.usuarioActual.id);
+          }
+        }
+      } catch (error) {
+        console.error("Error al cargar usuarios de oficina:", error);
+        this.errorUsuarios = true;
+        this.usuariosOficina = [];
+      } finally {
+        this.cargandoUsuarios = false;
       }
-    }
-
-  } catch (error) {
-    console.error('Error al cargar usuarios de oficina:', error);
-    this.errorUsuarios = true;
-    this.usuariosOficina = [];
-  } finally {
-    this.cargandoUsuarios = false;
-  }
-},
+    },
 
     esUsuarioActual(usuario) {
       return this.usuarioActual && this.usuarioActual.id === usuario.id;
     },
 
     seleccionarTodosUsuarios() {
-      this.usuariosSeleccionados = this.usuariosOficina.map(u => u.id);
+      this.usuariosSeleccionados = this.usuariosOficina.map((u) => u.id);
     },
 
     deseleccionarTodosUsuarios() {
@@ -446,8 +654,8 @@ export default {
     },
 
     obtenerNombreUsuario(usuarioId) {
-      const usuario = this.usuariosOficina.find(u => u.id === usuarioId);
-      return usuario ? `${usuario.nombre} ${usuario.apellido}` : 'Usuario no encontrado';
+      const usuario = this.usuariosOficina.find((u) => u.id === usuarioId);
+      return usuario ? `${usuario.nombre} ${usuario.apellido}` : "Usuario no encontrado";
     },
 
     obtenerColorUsuario(usuarioId) {
@@ -459,12 +667,16 @@ export default {
       if (this.usuariosSeleccionados.length === 0) return;
 
       // Mostrar diálogo de progreso
-      const dialogProgress = new Dialog("Generando asignaciones...", "Procesando", Dialog.type.progress);
+      const dialogProgress = new Dialog(
+        "Generando asignaciones...",
+        "Procesando",
+        Dialog.type.progress
+      );
       dialogProgress.open();
 
       try {
         // Simular un pequeño delay para que se vea el progreso
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Obtener días de lunes a viernes del mes seleccionado
         const asignaciones = [];
@@ -481,7 +693,7 @@ export default {
             asignaciones.push({
               fecha: fecha,
               usuarioId: null,
-              nombreUsuario: null
+              nombreUsuario: null,
             });
           }
         }
@@ -511,126 +723,137 @@ export default {
 
         // Cerrar diálogo de progreso
         Dialog.hide();
-
       } catch (error) {
-        console.error('Error al generar asignaciones:', error);
+        console.error("Error al generar asignaciones:", error);
         Dialog.hide();
 
         // Mostrar error
-        const dialogError = new Dialog("Error al generar las asignaciones", "Error", Dialog.type.error);
+        const dialogError = new Dialog(
+          "Error al generar las asignaciones",
+          "Error",
+          Dialog.type.error
+        );
         dialogError.open();
       }
     },
 
     actualizarNombreUsuario(index) {
       if (this.asignaciones[index]) {
-        this.asignaciones[index].nombreUsuario = this.obtenerNombreUsuario(this.asignaciones[index].usuarioId);
+        this.asignaciones[index].nombreUsuario = this.obtenerNombreUsuario(
+          this.asignaciones[index].usuarioId
+        );
       }
     },
 
     async guardarAsignaciones() {
-  if (this.asignaciones.length === 0) return;
+      if (this.asignaciones.length === 0) return;
 
-  let dialogProgress = null;
+      let dialogProgress = null;
 
-  try {
-    this.guardandoEventos = true;
-    
-    // Mostrar diálogo de progreso
-    dialogProgress = new Dialog(
-      `Creando ${this.asignaciones.length} eventos...`, 
-      "Guardando", 
-      Dialog.type.progress
-    );
-    dialogProgress.open();
-    
-    // Usar el nuevo método paralelo
-    const resultado = await eventoService.createEventosBasuraRapido(this.asignaciones);
+      try {
+        this.guardandoEventos = true;
 
-    // Cerrar diálogo de progreso
-    if (dialogProgress) {
-      Dialog.hide();
-      dialogProgress = null;
-    }
+        // Mostrar diálogo de progreso
+        dialogProgress = new Dialog(
+          `Creando ${this.asignaciones.length} eventos...`,
+          "Guardando",
+          Dialog.type.progress
+        );
+        dialogProgress.open();
 
-    // Mostrar resultados
-    if (resultado.fallidos.length > 0) {
-      this.$emit("mostrar-error", 
-        `${resultado.exitosos.length} eventos creados, ${resultado.fallidos.length} fallaron`
-      );
-    } else {
-      this.$emit("mostrar-exito", 
-        `🚀 ¡Rápido! ${resultado.total} eventos de basura creados para ${this.meses[this.mesSeleccionado]} ${this.anioSeleccionado}`
-      );
-    }
-    
-    // Emitir evento con datos completos
-    this.$emit("guardar-asignaciones", {
-      eventosCreados: resultado.total,
-      totalAsignaciones: this.asignaciones.length,
-      mes: this.meses[this.mesSeleccionado],
-      anio: this.anioSeleccionado,
-      eventos: resultado.exitosos,
-      fechas: this.asignaciones.map(a => a.fecha),
-      fallidos: resultado.fallidos.length
-    });
-      
-  } catch (error) {
-    console.error('Error al guardar asignaciones:', error);
-    
-    if (dialogProgress) {
-      Dialog.hide();
-    }
-    
-    this.$emit("mostrar-error", "Error al guardar las asignaciones: " + (error.message || error));
-  } finally {
-    this.guardandoEventos = false;
-  }
-},
+        // Usar el nuevo método paralelo
+        const resultado = await eventoService.createEventosBasuraRapido(this.asignaciones);
+
+        // Cerrar diálogo de progreso
+        if (dialogProgress) {
+          Dialog.hide();
+          dialogProgress = null;
+        }
+
+        // Mostrar resultados
+        if (resultado.fallidos.length > 0) {
+          this.$emit(
+            "mostrar-error",
+            `${resultado.exitosos.length} eventos creados, ${resultado.fallidos.length} fallaron`
+          );
+        } else {
+          this.$emit(
+            "mostrar-exito",
+            `🚀 ¡Rápido! ${resultado.total} eventos de basura creados para ${
+              this.meses[this.mesSeleccionado]
+            } ${this.anioSeleccionado}`
+          );
+        }
+
+        // Emitir evento con datos completos
+        this.$emit("guardar-asignaciones", {
+          eventosCreados: resultado.total,
+          totalAsignaciones: this.asignaciones.length,
+          mes: this.meses[this.mesSeleccionado],
+          anio: this.anioSeleccionado,
+          eventos: resultado.exitosos,
+          fechas: this.asignaciones.map((a) => a.fecha),
+          fallidos: resultado.fallidos.length,
+        });
+      } catch (error) {
+        console.error("Error al guardar asignaciones:", error);
+
+        if (dialogProgress) {
+          Dialog.hide();
+        }
+
+        this.$emit(
+          "mostrar-error",
+          "Error al guardar las asignaciones: " + (error.message || error)
+        );
+      } finally {
+        this.guardandoEventos = false;
+      }
+    },
 
     exportarPDF() {
-  if (this.asignaciones.length === 0) {
-    alert("No hay asignaciones para exportar.");
-    return;
-  }
+      if (this.asignaciones.length === 0) {
+        alert("No hay asignaciones para exportar.");
+        return;
+      }
 
-  try {
-    // Crear un elemento HTML temporal para renderizar el calendario
-    const element = document.createElement("div");
-    element.style.fontFamily = "Arial, sans-serif";
-    element.style.padding = "20px";
-    element.style.backgroundColor = "white";
+      try {
+        // Crear un elemento HTML temporal para renderizar el calendario
+        const element = document.createElement("div");
+        element.style.fontFamily = "Arial, sans-serif";
+        element.style.padding = "20px";
+        element.style.backgroundColor = "white";
 
-    const anio = this.anioSeleccionado;
-    const mes = this.mesSeleccionado;
-    const nombreMes = this.meses[mes];
+        const anio = this.anioSeleccionado;
+        const mes = this.mesSeleccionado;
+        const nombreMes = this.meses[mes];
 
-    // Crear mapa de asignaciones por día
-    const asignacionesPorDia = {};
-    this.asignaciones.forEach((asignacion) => {
-      const dia = asignacion.fecha.getDate();
-      asignacionesPorDia[dia] = {
-        nombreUsuario: asignacion.nombreUsuario,
-        color: this.obtenerColorUsuario(asignacion.usuarioId)
-      };
-    });
+        // Crear mapa de asignaciones por día
+        const asignacionesPorDia = {};
+        this.asignaciones.forEach((asignacion) => {
+          const dia = asignacion.fecha.getDate();
+          asignacionesPorDia[dia] = {
+            nombreUsuario: asignacion.nombreUsuario,
+            color: this.obtenerColorUsuario(asignacion.usuarioId),
+          };
+        });
 
-    const diasSemanaCortos = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+        const diasSemanaCortos = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-    // Añadir título con mejor estilo
-    element.innerHTML = `
+        // Añadir título con mejor estilo
+        element.innerHTML = `
       <div style="text-align: center; margin-bottom: 25px;">
         <h1 style="font-size: 28px; margin: 0 0 10px 0; color: #1a56db; font-weight: 700;">
           ${nombreMes.toUpperCase()} ${anio}
         </h1>
         <p style="font-size: 16px; margin: 0; color: #666; font-weight: 400;">
-          Asignación de tareas de basura - ${this.oficinaActual?.nombre || 'Oficina'}
+          Asignación de tareas de basura - ${this.oficinaActual?.nombre || "Oficina"}
         </p>
       </div>
     `;
 
-    // Crear la estructura del calendario con mejor diseño
-    let tablaHTML = `
+        // Crear la estructura del calendario con mejor diseño
+        let tablaHTML = `
       <table style="
         width: 100%; 
         border-collapse: collapse; 
@@ -660,59 +883,59 @@ export default {
         <tbody>
     `;
 
-    // Determinar el primer día del mes
-    const primerDia = new Date(anio, mes, 1);
-    const ultimoDia = new Date(anio, mes + 1, 0);
-    const diasEnMes = ultimoDia.getDate();
-    const diaSemanaPrimerDia = primerDia.getDay();
+        // Determinar el primer día del mes
+        const primerDia = new Date(anio, mes, 1);
+        const ultimoDia = new Date(anio, mes + 1, 0);
+        const diasEnMes = ultimoDia.getDate();
+        const diaSemanaPrimerDia = primerDia.getDay();
 
-    let diaActual = 1;
+        let diaActual = 1;
 
-    // Generar filas del calendario
-    for (let i = 0; i < 6; i++) {
-      let filaHTML = '<tr>';
+        // Generar filas del calendario
+        for (let i = 0; i < 6; i++) {
+          let filaHTML = "<tr>";
 
-      for (let j = 0; j < 7; j++) {
-        if ((i === 0 && j < diaSemanaPrimerDia) || diaActual > diasEnMes) {
-          // Celdas vacías
-          filaHTML += `
+          for (let j = 0; j < 7; j++) {
+            if ((i === 0 && j < diaSemanaPrimerDia) || diaActual > diasEnMes) {
+              // Celdas vacías
+              filaHTML += `
             <td style="
               border: 1px solid #e5e7eb;
               background-color: #f9fafb;
               height: 110px;
             "></td>
           `;
-        } else {
-          const esDiaActual =
-            diaActual === new Date().getDate() &&
-            mes === new Date().getMonth() &&
-            anio === new Date().getFullYear();
+            } else {
+              const esDiaActual =
+                diaActual === new Date().getDate() &&
+                mes === new Date().getMonth() &&
+                anio === new Date().getFullYear();
 
-          const fechaActual = new Date(anio, mes, diaActual);
-          const diaSemana = fechaActual.getDay();
-          const esLunesAViernes = diaSemana >= 1 && diaSemana <= 5;
-          const esDomingo = diaSemana === 0;
-          const esSabado = diaSemana === 6;
+              const fechaActual = new Date(anio, mes, diaActual);
+              const diaSemana = fechaActual.getDay();
+              const esLunesAViernes = diaSemana >= 1 && diaSemana <= 5;
+              const esDomingo = diaSemana === 0;
+              const esSabado = diaSemana === 6;
 
-          // Colores de fondo diferenciados
-          let fondoCelda = "white";
-          if (esDiaActual) {
-            fondoCelda;
-          } else if (esDomingo || esSabado) {
-            fondoCelda = "#f3f4f6";
-          }
+              // Colores de fondo diferenciados
+              let fondoCelda = "white";
+              if (esDiaActual) {
+                fondoCelda;
+              } else if (esDomingo || esSabado) {
+                fondoCelda = "#f3f4f6";
+              }
 
-          let colorNumero;
-          if (esDomingo || esSabado) {
-            colorNumero = "#6b7280";
-          }
+              let colorNumero;
+              if (esDomingo || esSabado) {
+                colorNumero = "#6b7280";
+              }
 
-          const asignacion = asignacionesPorDia[diaActual];
+              const asignacion = asignacionesPorDia[diaActual];
 
-          let personaHTML = "";
-          if (asignacion && esLunesAViernes) {
-            // Contenedor mejorado para el nombre con mejor manejo de texto largo
-            personaHTML = `
+              let personaHTML = "";
+              if (asignacion && esLunesAViernes) {
+                // Contenedor mejorado para el nombre con mejor manejo de texto largo
+                personaHTML = `
               <div style="
                 position: absolute;
                 bottom: 0;
@@ -742,9 +965,9 @@ export default {
                 </div>
               </div>
             `;
-          }
+              }
 
-          filaHTML += `
+              filaHTML += `
             <td style="
               border: 1px solid #e5e7eb;
               vertical-align: top;
@@ -765,7 +988,9 @@ export default {
                   font-weight: ${esDiaActual ? "700" : "500"};
                   color: ${colorNumero};
                   text-align: right;
-                  ${esDiaActual ? `
+                  ${
+                    esDiaActual
+                      ? `
                     background-color: #3b82f6;
                     color: white;
                     width: 28px;
@@ -776,7 +1001,9 @@ export default {
                     justify-content: center;
                     margin-left: auto;
                     font-size: 14px;
-                  ` : ''}
+                  `
+                      : ""
+                  }
                 ">
                   ${diaActual}
                 </div>
@@ -785,25 +1012,25 @@ export default {
             </td>
           `;
 
-          diaActual++;
+              diaActual++;
+            }
+          }
+
+          filaHTML += "</tr>";
+          tablaHTML += filaHTML;
+
+          if (diaActual > diasEnMes) break;
         }
-      }
 
-      filaHTML += "</tr>";
-      tablaHTML += filaHTML;
-
-      if (diaActual > diasEnMes) break;
-    }
-
-    tablaHTML += `
+        tablaHTML += `
         </tbody>
       </table>
     `;
 
-    element.innerHTML += tablaHTML;
+        element.innerHTML += tablaHTML;
 
-    // Añadir solo la fecha de generación
-    let footerHTML = `
+        // Añadir solo la fecha de generación
+        let footerHTML = `
       <div style="
         margin-top: 25px;
         text-align: center;
@@ -818,57 +1045,57 @@ export default {
           <strong>Generado el:</strong> ${new Date().toLocaleDateString("es-ES", {
             day: "numeric",
             month: "long",
-            year: "numeric"
+            year: "numeric",
           })}
         </p>
       </div>
     `;
 
-    element.innerHTML += footerHTML;
+        element.innerHTML += footerHTML;
 
-    // Configurar las opciones de html2pdf con mejor calidad
-    const options = {
-      margin: [10, 10, 10, 10],
-      filename: `Calendario_Basura_${nombreMes}_${anio}.pdf`,
-      image: { 
-        type: "jpeg", 
-        quality: 0.98 
-      },
-      html2canvas: {
-        scale: 3,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        letterRendering: true,
-      },
-      jsPDF: { 
-        unit: "mm", 
-        format: "a4", 
-        orientation: "portrait",
-        compress: true
-      },
-      pagebreak: { 
-        mode: ['avoid-all', 'css', 'legacy'] 
-      }
-    };
+        // Configurar las opciones de html2pdf con mejor calidad
+        const options = {
+          margin: [10, 10, 10, 10],
+          filename: `Calendario_Basura_${nombreMes}_${anio}.pdf`,
+          image: {
+            type: "jpeg",
+            quality: 0.98,
+          },
+          html2canvas: {
+            scale: 3,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            letterRendering: true,
+          },
+          jsPDF: {
+            unit: "mm",
+            format: "a4",
+            orientation: "portrait",
+            compress: true,
+          },
+          pagebreak: {
+            mode: ["avoid-all", "css", "legacy"],
+          },
+        };
 
-    // Generar el PDF
-    html2pdf()
-      .from(element)
-      .set(options)
-      .save()
-      .then(() => {
-        console.log("PDF generado exitosamente");
-      })
-      .catch((error) => {
-        console.error("Error durante la generación del PDF:", error);
+        // Generar el PDF
+        html2pdf()
+          .from(element)
+          .set(options)
+          .save()
+          .then(() => {
+            console.log("PDF generado exitosamente");
+          })
+          .catch((error) => {
+            console.error("Error durante la generación del PDF:", error);
+            alert("Hubo un error al generar el PDF. Por favor, intenta de nuevo.");
+          });
+      } catch (error) {
+        console.error("Error al generar el PDF:", error);
         alert("Hubo un error al generar el PDF. Por favor, intenta de nuevo.");
-      });
-  } catch (error) {
-    console.error("Error al generar el PDF:", error);
-    alert("Hubo un error al generar el PDF. Por favor, intenta de nuevo.");
-  }
-},
+      }
+    },
     formatearFecha(fecha) {
       return fecha.toLocaleDateString("es-ES", {
         day: "2-digit",

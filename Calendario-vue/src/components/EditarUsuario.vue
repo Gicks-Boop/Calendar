@@ -1,6 +1,8 @@
 <template>
   <div v-if="mostrarModal" class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+    <!--contenedor del modal-->
     <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+      <!--cabecera del modal-->
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-semibold text-gray-900">Editar Usuario</h3>
         <button @click="cerrar" class="text-gray-400 hover:text-gray-600">
@@ -79,12 +81,13 @@
         </div>
 
         <!-- Campos del formulario -->
+         
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
           <input
             v-model="formulario.nombre"
             type="text"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
             placeholder="Nombre del usuario"
           >
         </div>
@@ -94,7 +97,7 @@
           <input
             v-model="formulario.apellido"
             type="text"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
             placeholder="Apellido del usuario"
           >
         </div>
@@ -104,7 +107,7 @@
           <input
             v-model="formulario.email"
             type="email"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
             placeholder="correo@ejemplo.com"
           >
         </div>
@@ -116,7 +119,7 @@
           <input
             v-model="formulario.password"
             type="password"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
             placeholder="Dejar vacío para no cambiar"
           >
         </div>
@@ -126,7 +129,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Rol</label>
           <select
             v-model="formulario.idRol"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
           >
             <option v-for="rol in roles" :key="rol.id" :value="rol.id">
               {{ rol.nombre }}
@@ -139,26 +142,26 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Oficina</label>
           <select
             v-model="formulario.idOficina"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white"
           >
             <option v-for="oficina in oficinas" :key="oficina.id" :value="oficina.id">
               {{ oficina.nombre }}
             </option>
           </select>
         </div>
-
         <!-- Botones -->
-        <div class="flex justify-end space-x-3 pt-4">
+         <div class="sticky bottom-0 bg-white/95 backdrop-blur-md shadow-md border-t border-gray-200 px-4 sm:px-6 py-4 z-50">
+        <div class="flex flex-col sm:flex-row sm:justify-between items-stretch gap-4 sm:gap-6">
           <button
             @click="cerrar"
-            class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+            class="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Cancelar
           </button>
           <button
             @click="actualizarUsuario"
             :disabled="actualizando || !formularioValido"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg v-if="actualizando" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -167,6 +170,7 @@
             {{ actualizando ? 'Actualizando...' : 'Actualizar Usuario' }}
           </button>
         </div>
+         </div>
       </div>
     </div>
   </div>

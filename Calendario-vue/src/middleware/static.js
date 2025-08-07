@@ -3,7 +3,8 @@ const isEnvProd = import.meta.env != undefined && import.meta.env.MODE != "devel
 const _SITE_CONFIG = {
   DEV: {
     viewPath: isEnvProd ? "/" : "/",
-    API_ENDPOINT: "http://localhost:3000/api-v1/",
+    API_ENDPOINT: "https://miraitech.com.mx:9094/api-v1/",
+    //API_ENDPOINT: "http://localhost:3000/api-v1/",
     assetsPath: isEnvProd ? "/assets/" : "/src/assets/",
     productName: "Calendario",
   },
