@@ -436,6 +436,7 @@ class EventoService {
  */
 async createEventosBasuraRapido(asignaciones) {
   const userData = Static.BM_GET_USER_DATA();
+  const oficina = Static.BM_GET_SIDEBAR_DATA();
   if (!userData?.id) {
     throw new Error("Usuario no autenticado");
   }
@@ -468,7 +469,7 @@ asignaciones.forEach(asignacion => {
   promesasEventos.push(this.createEvento(eventoBasura));
 
   // Evento adicional si es miércoles
-  if (asignacion.fecha.getDay() === 3) {
+  if (asignacion.fecha.getDay() === 3 && oficina.oficina=="SEGEL") {
     const eventoRefri = {
       titulo: `Limpiar refrigerador`,
       descripcion: `Tarea especial asignada a ${asignacion.nombreUsuario} (miércoles)`,
