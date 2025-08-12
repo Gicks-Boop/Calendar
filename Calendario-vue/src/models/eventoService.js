@@ -452,13 +452,13 @@ asignaciones.forEach(asignacion => {
       asignacion.fecha.getFullYear(), 
       asignacion.fecha.getMonth(), 
       asignacion.fecha.getDate(), 
-      18, 0
+      9, 0
     ).toISOString(),
     fechaFin: new Date(
       asignacion.fecha.getFullYear(), 
       asignacion.fecha.getMonth(), 
       asignacion.fecha.getDate(), 
-      18, 30
+      16, 30
     ).toISOString(),
     usuariosAsignadosIds: [asignacion.usuarioId],
     creadorId: userData.id,
@@ -477,13 +477,13 @@ asignaciones.forEach(asignacion => {
         asignacion.fecha.getFullYear(), 
         asignacion.fecha.getMonth(), 
         asignacion.fecha.getDate(), 
-        17, 30
+        9, 0
       ).toISOString(),
       fechaFin: new Date(
         asignacion.fecha.getFullYear(), 
         asignacion.fecha.getMonth(), 
         asignacion.fecha.getDate(), 
-        18, 0
+        16, 30
       ).toISOString(),
       usuariosAsignadosIds: [asignacion.usuarioId],
       creadorId: userData.id,
