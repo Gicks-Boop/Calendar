@@ -1,106 +1,204 @@
 <template>
-  <div v-if="mostrarModal" class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-900">Eliminar Usuario</h3>
-        <button @click="cerrar" class="text-gray-400 hover:text-gray-600">
+  <div v-if="mostrarModal" class="fixed inset-0  bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <!-- Contenedor del modal - Responsivo -->
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md md:max-w-2xl lg:max-w-3xl xl:max-w-4xl max-h-[90vh] flex flex-col">
+      <!-- Cabecera -->
+      <div class="bg-gradient-to-r from-white-500 px-6 py-4 text-black flex items-center justify-between border-b border-gray-200 rounded-t-2xl">
+        <!-- Títulos a la izquierda -->
+        <div>
+          <h3 class="text-lg md:text-xl font-semibold text-gray-900">Eliminar Usuario</h3>
+          <p class="text-sm md:text-base text-gray-700">
+            {{ !usuarioSeleccionado ? 'Selecciona el usuario a eliminar:' : 'Usuario seleccionado para eliminación:' }}
+          </p>
+        </div>
+
+        <!-- Botón cerrar a la derecha -->
+        <button @click="cerrar" class="text-black hover:text-red-600 transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
       </div>
 
-      <!-- Lista de usuarios -->
-      <div class="mb-4">
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Selecciona el usuario a eliminar:
-        </label>
-        
-        <!-- Buscador -->
-        <div class="mb-3">
-          <input
-            v-model="busqueda"
-            type="text"
-            placeholder="Buscar usuario..."
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
-          >
-        </div>
+      <!-- Contenido del modal -->
+      <div class="flex-1 overflow-y-auto min-h-0">
+        <div class="p-6 md:p-8 space-y-6">
+          <!-- Lista de usuarios para seleccionar -->
+          <div v-if="!usuarioSeleccionado">
+            <!-- Buscador -->
+            <div class="mb-6">
+              <label for="busqueda" class="block text-gray-700 font-medium mb-2">Buscar usuario</label>
+              <input
+                v-model="busqueda"
+                type="text"
+                id="busqueda"
+                placeholder="Buscar por nombre, apellido o email..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-black bg-white text-base"
+              >
+            </div>
 
-        <!-- Loading -->
-        <div v-if="cargando" class="text-center py-4">
-          <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
-          <p class="mt-2 text-sm text-gray-600">Cargando usuarios...</p>
-        </div>
+            <!-- Loading -->
+            <div v-if="cargando" class="text-center py-8">
+              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red-500"></div>
+              <p class="mt-3 text-sm text-gray-600">Cargando usuarios...</p>
+            </div>
 
-        <!-- Lista de usuarios filtrados -->
-        <div v-else-if="usuariosFiltrados.length > 0" class="max-h-64 overflow-y-auto border border-gray-200 rounded-md">
-          <div
-            v-for="usuario in usuariosFiltrados"
-            :key="usuario.id"
-            @click="seleccionarUsuario(usuario)"
-            :class="[
-              'p-3 cursor-pointer hover:bg-red-50 border-b border-gray-100 last:border-b-0',
-              usuarioSeleccionado?.id === usuario.id ? 'bg-red-100 border-red-200' : ''
-            ]"
-          >
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="font-medium text-gray-900">{{ usuario.nombre }} {{ usuario.apellido }}</p>
-                <p class="text-sm text-gray-600">{{ usuario.email }}</p>
-                <!-- <p class="text-xs text-gray-500">{{ usuario.oficina || 'Sin oficina' }}</p> -->
-              </div>
-              <div class="flex items-center">
-                <span class="text-xs px-2 py-1 rounded-full"
-                      :class="usuario.rol?.nombre === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'">
-                  {{ usuario.rol?.nombre || 'Sin rol' }}
-                </span>
+            <!-- Lista de usuarios filtrados con grid responsivo -->
+            <div v-else-if="usuariosFiltrados.length > 0" class="max-h-96 md:max-h-[400px] overflow-y-auto">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div
+                  v-for="usuario in usuariosFiltrados"
+                  :key="usuario.id"
+                  @click="seleccionarUsuario(usuario)"
+                  class="p-4 cursor-pointer hover:bg-red-50 border border-gray-200 rounded-lg hover:border-red-300 hover:shadow-md transition-all duration-200"
+                >
+                  <div class="space-y-2">
+                    <div>
+                      <p class="font-medium text-gray-900">{{ usuario.nombre }} {{ usuario.apellido }}</p>
+                      <p class="text-sm text-gray-600 break-all">{{ usuario.email }}</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="text-xs px-2 py-1 rounded-full"
+                            :class="usuario.rol?.nombre === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'">
+                        {{ usuario.rol?.nombre || 'Sin rol' }}
+                      </span>
+                      <span v-if="usuario.oficina" class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
+                        {{ usuario.oficina.nombre }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="mt-2 flex justify-end">
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <!-- No hay usuarios -->
+            <div v-else-if="!cargando" class="text-center py-12 text-gray-500">
+              <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+              </svg>
+              <p class="mt-4 text-lg">No se encontraron usuarios</p>
+            </div>
           </div>
-        </div>
 
-        <!-- No hay usuarios -->
-        <div v-else-if="!cargando" class="text-center py-4 text-gray-500">
-          <p>No se encontraron usuarios</p>
-        </div>
-      </div>
+          <!-- Información del usuario seleccionado -->
+          <div v-if="usuarioSeleccionado" class="space-y-4">
+            <!-- Botón volver -->
+            <button 
+              type="button" 
+              @click="usuarioSeleccionado = null" 
+              class="flex items-center text-red-600 hover:text-red-800 transition-colors duration-200 font-medium text-sm md:text-base"
+            >
+              <svg class="w-4 h-4 md:w-5 md:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              Volver a la lista
+            </button>
 
-      <!-- Usuario seleccionado -->
-      <div v-if="usuarioSeleccionado" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-        <h4 class="font-medium text-red-900 mb-2">Usuario seleccionado para eliminar:</h4>
-        <div class="text-sm text-red-800">
-          <p><strong>Nombre:</strong> {{ usuarioSeleccionado.nombre }} {{ usuarioSeleccionado.apellido }}</p>
-          <p><strong>Email:</strong> {{ usuarioSeleccionado.email }}</p>
-          <p><strong>Rol:</strong> {{ usuarioSeleccionado.rol?.nombre || 'Sin rol' }}</p>
-        </div>
-      </div>
+            <!-- Información del usuario a eliminar - Optimizada para móvil -->
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 shadow-sm">
+              <div class="flex items-center mb-3">
+                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                </div>
+                <h4 class="text-base md:text-lg font-semibold text-red-900">Usuario seleccionado para eliminar</h4>
+              </div>
+              
+              <div class="bg-white rounded-lg p-3 border border-red-200">
+                <div class="space-y-3">
+                  <!-- Información en formato vertical para móvil -->
+                  <div class="space-y-2">
+                    <div>
+                      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Nombre</span>
+                      <p class="text-sm md:text-base font-medium text-gray-900">{{ usuarioSeleccionado.nombre }} {{ usuarioSeleccionado.apellido }}</p>
+                    </div>
+                    
+                    <div>
+                      <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</span>
+                      <p class="text-sm md:text-base text-gray-900 break-all">{{ usuarioSeleccionado.email }}</p>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div>
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1">Rol</span>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                              :class="usuarioSeleccionado.rol?.nombre === 'ADMIN' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'">
+                          {{ usuarioSeleccionado.rol?.nombre || 'Sin rol' }}
+                        </span>
+                      </div>
+                      
+                      <div v-if="usuarioSeleccionado.oficina">
+                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1">Oficina</span>
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          {{ usuarioSeleccionado.oficina.nombre }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-      <!-- Advertencia -->
-      <div v-if="usuarioSeleccionado" class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-        <div class="flex">
-          <svg class="w-5 h-5 text-yellow-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-          </svg>
-          <div>
-            <h4 class="text-sm font-medium text-yellow-800">¡Advertencia!</h4>
-            <p class="text-sm text-yellow-700">Esta acción no se puede deshacer. El usuario será eliminado permanentemente del sistema.</p>
+            <!-- Advertencia optimizada para móvil -->
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 shadow-sm">
+              <div class="flex items-start">
+                <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                  <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                  </svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="text-base md:text-lg font-semibold text-amber-900 mb-2">⚠️ Acción Irreversible</h4>
+                  <div class="bg-white rounded-lg p-3 border border-amber-200">
+                    <p class="text-sm text-amber-800 leading-relaxed mb-3">
+                      Esta acción <span class="font-semibold">no se puede deshacer</span>. El usuario será eliminado permanentemente.
+                    </p>
+                    
+                    <!-- Lista compacta para móvil -->
+                    <div class="text-xs text-amber-700 space-y-1">
+                      <div class="flex items-center">
+                        <span class="w-1 h-1 bg-amber-500 rounded-full mr-2 flex-shrink-0"></span>
+                        <span>Información personal</span>
+                      </div>
+                      <div class="flex items-center">
+                        <span class="w-1 h-1 bg-amber-500 rounded-full mr-2 flex-shrink-0"></span>
+                        <span>Historial de actividad</span>
+                      </div>
+                      <div class="flex items-center">
+                        <span class="w-1 h-1 bg-amber-500 rounded-full mr-2 flex-shrink-0"></span>
+                        <span>Acceso al sistema</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Botones -->
-      <div class="sticky bottom-0 bg-white/95 backdrop-blur-md shadow-md border-t border-gray-200 px-4 sm:px-6 py-4 z-50">
-        <div class="flex flex-col sm:flex-row sm:justify-between items-stretch gap-4 sm:gap-6">
+      <div class="bg-white px-6 py-4 md:px-8 border-t border-gray-200 flex justify-end gap-4 rounded-b-2xl">
         <button
+          type="button"
           @click="cerrar"
-          class="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+          :disabled="eliminando"
         >
           Cancelar
         </button>
         <button
+          v-if="usuarioSeleccionado"
+          type="button"
+          :disabled="eliminando"
+          class="px-6 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           @click="mostrarConfirmacion"
-          :disabled="!usuarioSeleccionado || eliminando"
-          class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <svg v-if="eliminando" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -108,76 +206,79 @@
           </svg>
           {{ eliminando ? 'Eliminando...' : 'Eliminar Usuario' }}
         </button>
-        </div>
       </div>
     </div>
   </div>
 
   <!-- Modal de confirmación -->
-  <div v-if="mostrarModalConfirmacion" class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[60]">
-    <div class="bg-white rounded-lg p-6 w-full max-w-sm mx-4 shadow-xl">
-      <div class="flex items-center justify-center mb-4">
-        <div class="p-3 bg-red-100 rounded-full">
-          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-          </svg>
+  <div v-if="mostrarModalConfirmacion" class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4">
+      <div class="p-6">
+        <div class="flex items-center justify-center mb-4">
+          <div class="p-3 bg-red-100 rounded-full">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            </svg>
+          </div>
         </div>
-      </div>
-      
-      <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Confirmar Eliminación</h3>
-      
-      <p class="text-sm text-gray-600 text-center mb-6">
-        ¿Estás seguro de que deseas eliminar al usuario <strong>{{ usuarioSeleccionado?.nombre }} {{ usuarioSeleccionado?.apellido }}</strong>? 
-        Esta acción no se puede deshacer.
-      </p>
-      
-      <div class="flex justify-center space-x-3">
-        <button
-          @click="cancelarConfirmacion"
-          class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
-        >
-          Cancelar
-        </button>
-        <button
-          @click="confirmarEliminacion"
-          class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-        >
-          Sí, eliminar
-        </button>
+        
+        <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Confirmar Eliminación</h3>
+        
+        <p class="text-sm text-gray-600 text-center mb-6">
+          ¿Estás seguro de que deseas eliminar al usuario <strong>{{ usuarioSeleccionado?.nombre }} {{ usuarioSeleccionado?.apellido }}</strong>? 
+          Esta acción no se puede deshacer.
+        </p>
+        
+        <div class="flex justify-center gap-3">
+          <button
+            @click="cancelarConfirmacion"
+            class="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            @click="confirmarEliminacion"
+            class="px-6 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+          >
+            Sí, eliminar
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Modal de notificación -->
-  <div v-if="notificacion.mostrar" class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[70]">
-    <div class="bg-white rounded-lg p-6 w-full max-w-sm mx-4 shadow-xl">
-      <div class="flex items-center justify-center mb-4">
-        <div class="p-3 rounded-full" :class="notificacion.tipo === 'exito' ? 'bg-green-100' : 'bg-red-100'">
-          <svg v-if="notificacion.tipo === 'exito'" class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
-          <svg v-else class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
+  <div v-if="notificacion.mostrar" class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm mx-4">
+      <div class="p-6">
+        <div class="flex items-center justify-center mb-4">
+          <div class="p-3 rounded-full" :class="notificacion.tipo === 'exito' ? 'bg-green-100' : 'bg-red-100'">
+            <svg v-if="notificacion.tipo === 'exito'" class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <svg v-else class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
         </div>
-      </div>
-      
-      <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">
-        {{ notificacion.tipo === 'exito' ? 'Éxito' : 'Error' }}
-      </h3>
-      
-      <p class="text-sm text-gray-600 text-center mb-6">
-        {{ notificacion.mensaje }}
-      </p>
-      
-      <div class="flex justify-center">
-        <button
-          @click="cerrarNotificacion"
-          class="px-4 py-2 text-white rounded-md transition-colors"
-          :class="notificacion.tipo === 'exito' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'"
-        >
-          Aceptar
-        </button>
+        
+        <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">
+          {{ notificacion.tipo === 'exito' ? 'Éxito' : 'Error' }}
+        </h3>
+        
+        <p class="text-sm text-gray-600 text-center mb-6">
+          {{ notificacion.mensaje }}
+        </p>
+        
+        <div class="flex justify-center">
+          <button
+            @click="cerrarNotificacion"
+            class="px-6 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white transition-colors"
+            :class="notificacion.tipo === 'exito' ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500' : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'"
+          >
+            Aceptar
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -189,6 +290,7 @@ const userService = new User();
 
 export default {
   name: 'EliminarUsuario',
+  emits: ['cerrar', 'usuario-eliminado'],
   props: {
     mostrarModal: {
       type: Boolean,

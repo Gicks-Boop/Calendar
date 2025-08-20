@@ -30,16 +30,7 @@ router.beforeEach((to, from, next) => {
     next('/login');
   } else if (to.path === '/login' && usuario) {
     next('/calendario');
-  } else if (to.path === '/registro') {
-    // NUEVO: Verificar que esté autenticado Y sea ADMIN para acceder a registro
-    if (!usuario) {
-      next('/login');
-    } else if (usuario.rol?.nombre !== 'ADMIN') {
-      next('/calendario'); // Si no es ADMIN, redirigir al calendario
-    } else {
-      next(); // Es ADMIN, permitir acceso
-    }
-  } else {
+  }else{
     next();
   }
 });

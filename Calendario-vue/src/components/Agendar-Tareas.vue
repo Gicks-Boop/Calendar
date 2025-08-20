@@ -3,68 +3,70 @@
     <!-- Overlay modal que cubre toda la pantalla cuando está activo -->
     <div
       v-if="mostrarModal"
-      class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300"
-      :class="{ 'opacity-100': mostrarModal, 'opacity-0': !mostrarModal }"
+      class="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       @click.self="cerrarModal"
     >
-      <!-- Contenedor del modal -->
-      <div
-        class="bg-white rounded-lg shadow-xl transform max-w-lg w-full mx-4 max-h-[90vh] flex flex-col"
-        :class="{ 'animate-modal-appear': mostrarModal }"
-      >
-        <!-- Cabecera del modal -->
-        <div
-          class="sticky top-0 z-10 bg-gradient-to-r rounded-lg from-blue-500 to-indigo-600 text-white px-6 py-4 flex justify-between items-center"
-        >
-          <h3 class="text-lg font-bold">
-            {{ eventoEditar ? "Editar evento" : "Crear evento" }}: {{ fechaFormateada }}
-          </h3>
-          <button @click="cerrarModal" class="text-white hover:text-gray-200 focus:outline-none">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+      <!-- Contenedor del modal - Responsivo -->
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md lg:max-w-4xl xl:max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
+        <!-- Cabecera -->
+        <div class="bg-gradient-to-r from-white-500 px-6 py-5 text-black border-b border-gray-200">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-lg lg:text-xl font-semibold text-gray-900 mb-2">
+                {{ eventoEditar ? "Editar evento" : "Crear evento" }}
+              </h3>
+              <h1 class="block text-sm lg:text-base font-medium text-gray-700">
+                Evento para {{ fechaFormateada }}:
+              </h1>
+            </div>
+            <button @click="cerrarModal" class="text-black hover:text-red-600 transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <!-- Cuerpo del modal -->
-        <div class="flex-1 overflow-y-auto p-6">
-          <form @submit.prevent="guardarEvento" id="eventoForm" class="flex flex-col gap-4">
-            <!-- Campo para título -->
-            <div class="mb-4">
-              <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1"
-                >Título *</label
-              >
-              <input
-                type="text"
-                id="titulo"
-                v-model="nuevoEvento.titulo"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Ingresa el título del evento"
-                required
-              />
-            </div>
+        <div class="p-4 lg:p-8 space-y-4 lg:space-y-6 overflow-y-auto flex-1">
+          <!-- Mensajes de error o éxito -->
+          <div v-if="error" class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+            {{ error }}
+          </div>
+          <div v-if="exito" class="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg text-sm">
+            {{ exito }}
+          </div>
 
-            <!-- Selector de categoría -->
-            <div class="mb-4">
-              <label for="categoria" class="block text-sm font-medium text-gray-700 mb-1"
-                >Categoría *</label
-              >
-              <div class="relative">
+          <form @submit.prevent="guardarEvento" id="eventoForm" class="space-y-4 lg:space-y-6">
+            
+            <!-- Grid de campos principales para escritorio -->
+            <div class="lg:grid lg:grid-cols-2 lg:gap-6 space-y-4 lg:space-y-0">
+              <!-- Campo para título -->
+              <div>
+                <label for="titulo" class="block text-gray-700 font-medium mb-2">
+                  Título *
+                </label>
+                <input
+                  type="text"
+                  id="titulo"
+                  v-model="nuevoEvento.titulo"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white transition-all"
+                  placeholder="Ingresa el título del evento"
+                  :disabled="guardando"
+                  required
+                />
+              </div>
+
+              <!-- Selector de categoría -->
+              <div>
+                <label for="categoria" class="block text-gray-700 font-medium mb-2">
+                  Categoría *
+                </label>
                 <select
                   id="categoria"
                   v-model="nuevoEvento.categoria"
-                  class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white transition-all"
+                  :disabled="guardando"
                   required
                 >
                   <option disabled value="">Selecciona una categoría</option>
@@ -72,86 +74,88 @@
                     {{ cat.nombre }}
                   </option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      clip-rule="evenodd"
-                    ></path>
-                  </svg>
-                </div>
               </div>
             </div>
 
             <!-- Campo para descripción -->
-            <div class="mb-4">
-              <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1"
-                >Descripción (opcional)</label
-              >
+            <div>
+              <label for="descripcion" class="block text-gray-700 font-medium mb-2">
+                Descripción (opcional)
+              </label>
               <textarea
                 id="descripcion"
                 v-model="nuevoEvento.descripcion"
-                rows="3"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                rows="4"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white transition-all resize-none"
                 placeholder="Agrega detalles sobre este evento"
+                :disabled="guardando"
               ></textarea>
             </div>
 
             <!-- Fechas de inicio y fin -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="lg:grid lg:grid-cols-2 lg:gap-6 space-y-4 lg:space-y-0">
               <div>
-                <label for="fechaInicio" class="block text-sm font-medium text-gray-700 mb-1"
-                  >Fecha y hora de inicio *</label
-                >
+                <label for="fechaInicio" class="block text-gray-700 font-medium mb-2">
+                  Fecha y hora de inicio *
+                </label>
                 <input
                   type="datetime-local"
                   id="fechaInicio"
                   v-model="nuevoEvento.fechaInicio"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white transition-all"
+                  :disabled="guardando"
                   required
                 />
               </div>
               <div>
-                <label for="fechaFin" class="block text-sm font-medium text-gray-700 mb-1"
-                  >Fecha y hora de fin *</label
-                >
+                <label for="fechaFin" class="block text-gray-700 font-medium mb-2">
+                  Fecha y hora de fin *
+                </label>
                 <input
                   type="datetime-local"
                   id="fechaFin"
                   v-model="nuevoEvento.fechaFin"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black bg-white transition-all"
+                  :disabled="guardando"
                   required
                 />
               </div>
             </div>
 
             <!-- Selector de usuarios múltiple -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Asignar usuarios</label>
+            <div>
+              <label class="block text-gray-700 font-medium mb-2">Asignar usuarios</label>
 
               <!-- Opciones de asignación -->
-              <div class="flex flex-wrap gap-2 mb-3">
+              <div class="flex flex-wrap gap-2 mb-4">
                 <button
                   type="button"
                   @click="asignarATodos"
-                  class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors"
+                  class="px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium hover:bg-blue-200 transition-colors flex items-center"
+                  :disabled="guardando"
                 >
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                  </svg>
                   Asignar a todos
                 </button>
                 <button
                   type="button"
                   @click="asignarseAMismo"
-                  class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm hover:bg-green-200 transition-colors"
+                  class="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors flex items-center"
+                  :disabled="guardando"
                 >
+                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
                   Solo para mí
                 </button>
               </div>
 
               <!-- Lista de usuarios con checkboxes -->
-              <div class="max-h-48 overflow-y-auto border border-gray-300 rounded-md">
-                <div v-if="cargandoUsuarios" class="p-4 text-center text-gray-500">
-                  <svg class="animate-spin h-5 w-5 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+              <div class="border border-gray-300 rounded-lg overflow-hidden">
+                <div v-if="cargandoUsuarios" class="p-8 text-center text-gray-500">
+                  <svg class="animate-spin h-8 w-8 mx-auto mb-3" fill="none" viewBox="0 0 24 24">
                     <circle
                       class="opacity-25"
                       cx="12"
@@ -169,90 +173,79 @@
                   Cargando usuarios...
                 </div>
 
-                <div v-else-if="usuarios.length === 0" class="p-4 text-center text-gray-500">
+                <div v-else-if="usuarios.length === 0" class="p-8 text-center text-gray-500">
+                  <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                  </svg>
                   No se encontraron usuarios
                 </div>
 
-                <div v-else>
-                  <label
-                    v-for="usuario in usuarios"
-                    :key="usuario.id"
-                    class="flex items-center p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-                  >
-                    <input
-                      type="checkbox"
-                      :value="usuario.id"
-                      v-model="nuevoEvento.usuariosAsignadosIds"
-                      class="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <div class="flex-1">
-                      <div class="font-medium text-gray-900">
-                        {{ usuario.nombre }} {{ usuario.apellido }}
-                        <span v-if="esUsuarioActual(usuario)" class="text-blue-600 text-sm"
-                          >(Tú)</span
-                        >
+                <div v-else class="max-h-64 lg:max-h-80 overflow-y-auto">
+                  <!-- Grid en escritorio, lista en móvil -->
+                  <div class="lg:grid lg:grid-cols-2 xl:grid-cols-3">
+                    <label
+                      v-for="usuario in usuarios"
+                      :key="usuario.id"
+                      class="flex items-center p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 lg:border-r lg:last:border-r-0 xl:even:border-r xl:nth-child(3n):border-r-0 transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        :value="usuario.id"
+                        v-model="nuevoEvento.usuariosAsignadosIds"
+                        class="mr-3 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        :disabled="guardando"
+                      />
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium text-gray-900 truncate">
+                          {{ usuario.nombre }} {{ usuario.apellido }}
+                          <span v-if="esUsuarioActual(usuario)" class="text-blue-600 text-sm font-normal"
+                            >(Tú)</span
+                          >
+                        </div>
+                        <div v-if="usuario.email" class="text-sm text-gray-500 truncate">
+                          {{ usuario.email }}
+                        </div>
                       </div>
-                      <div v-if="usuario.email" class="text-sm text-gray-500">
-                        {{ usuario.email }}
-                      </div>
-                    </div>
-                  </label>
+                    </label>
+                  </div>
                 </div>
               </div>
 
               <!-- Contador de usuarios seleccionados -->
               <div
                 v-if="nuevoEvento.usuariosAsignadosIds.length > 0"
-                class="mt-2 text-sm text-gray-600"
+                class="mt-3 text-sm text-gray-600 bg-blue-50 px-3 py-2 rounded-lg flex items-center"
               >
+                <svg class="w-4 h-4 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
                 {{ nuevoEvento.usuariosAsignadosIds.length }} usuario(s) seleccionado(s)
               </div>
             </div>
           </form>
+        </div>        <!-- Botones -->
+        <div class="bg-gray-50 px-4 lg:px-6 py-4 lg:py-5 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3 lg:gap-4">
+          <button
+            type="button"
+            @click="cerrarModal"
+            class="w-full sm:w-auto px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            :disabled="guardando"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            form="eventoForm"
+            class="w-full sm:w-auto px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            :disabled="guardando || !formularioValido"
+          >
+            <svg v-if="guardando" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ guardando ? 'Guardando...' : (eventoEditar ? 'Actualizar evento' : 'Crear evento') }}
+          </button>
         </div>
-         <!-- Botones de acción -->
-            <div class="bg-white px-6 py-6 z-10">
-              <div class="flex flex-wrap justify-center gap-10 sm:gap-3">
-                <button
-                  type="button"
-                  @click="cerrarModal"
-                  class="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  :disabled="guardando"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  form="eventoForm"
-                  class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  :disabled="guardando || !formularioValido"
-                >
-                  <span v-if="guardando" class="flex items-center">
-                    <svg
-                      class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        class="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        stroke-width="4"
-                      ></circle>
-                      <path
-                        class="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Guardando...
-                  </span>
-                  <span v-else> {{ eventoEditar ? "Actualizar" : "Crear" }} evento </span>
-                </button>
-              </div>
-            </div>
       </div>
     </div>
   </div>

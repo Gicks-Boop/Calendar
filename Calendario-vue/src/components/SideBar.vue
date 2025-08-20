@@ -46,7 +46,7 @@
 
         <!-- Opciones simplificadas -->
         <div class="flex-1 px-4 py-2 space-y-3">
-          <button v-if="canUseAdminTools" @click="irARegistro"
+          <button v-if="canUseAdminTools" @click="abrirModalRegistro"
             class="w-full flex items-center justify-center px-4 py-3 text-left rounded-lg text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition-colors bg-gray-50">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -135,6 +135,11 @@
     <EditarUsuario :mostrarModal="mostrarModalEditarUsuario" @cerrar="cerrarModalEditarUsuario"
       @usuario-actualizado="handleUsuarioActualizado" />
 
+    <RegistroUsuario 
+      :mostrarModal="mostrarModalRegistro" 
+      @cerrar="cerrarModalRegistro"
+      @usuario-registrado="handleUsuarioRegistrado"/>
+
   </div>
 </template>
 
@@ -143,14 +148,26 @@ import SacarBasura from './SacarBasura.vue';
 import RuletteBar from './RuletteBar.vue';
 import EliminarUsuario from './EliminarUsuario.vue';
 import EditarUsuario from './EditarUsuario.vue';
+import RegistroUsuario from '@/Views/Registro-Usuario.vue';
 
 export default {
   name: "SideBar",
+  emits: [
+    'cerrar-sesion',
+    'asignar-basura', 
+    'ruleta',
+    'guardar-asignaciones',
+    'usuario-eliminado',
+    'usuario-actualizado',
+    'usuario-registrado'
+  ],
+
   components: {
     SacarBasura,
     RuletteBar,
     EliminarUsuario,
-    EditarUsuario
+    EditarUsuario,
+    RegistroUsuario
   },
 
   data() {
@@ -160,7 +177,8 @@ export default {
       mostrarModalBasura: false,
       mostrarModalRuleta: false,
       mostrarModalEliminarUsuario: false,
-      mostrarModalEditarUsuario: false
+      mostrarModalEditarUsuario: false,
+      mostrarModalRegistro: false
     };
   },
   computed: {
@@ -188,11 +206,24 @@ export default {
       this.menuAbierto = !this.menuAbierto;
     },
 
-    irARegistro() {
-      console.log('Navegando a registro...');
+      abrirModalRegistro() {
+      if (this.$static.BM_GET_USER_ROLE()?.nombre === 'USUARIO') {
+        return;
+      }
+      this.mostrarModalRegistro = true;
       this.menuAbierto = false;
-      this.$router.push('/registro');
     },
+
+    cerrarModalRegistro() {
+      this.mostrarModalRegistro = false;
+      this.menuAbierto = true;
+    },
+
+    handleUsuarioRegistrado(usuario) {
+      console.log("SideBar: Usuario registrado", usuario);
+      this.$emit("usuario-registrado", usuario);
+    },
+
 
     abrirModalEliminarUsuario() {
       if (this.$static.BM_GET_USER_ROLE()?.nombre === 'USUARIO') {

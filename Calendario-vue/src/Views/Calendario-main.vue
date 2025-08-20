@@ -16,7 +16,7 @@
          <!-- SideBar component -->
         <side-bar :usuario="usuario" @cerrar-sesion="cerrarSesion" @asignar-basura="handleAsignarBasura"
           @ruleta="handleRuleta" @usuario-eliminado="handleUsuarioEliminado"
-          @usuario-actualizado="handleUsuarioActualizado">
+          @usuario-actualizado="handleUsuarioActualizado"  @usuario-registrado="handleNuevoUsuario">
         </side-bar>
         <button @click="prevMonth"
           class="p-2 rounded-full hover:bg-blue-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white text-white"
@@ -616,6 +616,14 @@ export default {
       console.log("CalendarioMain: Propagando evento asignar-basura");
       this.$emit("asignar-basura");
     },
+
+     handleNuevoUsuario(usuario) {
+    console.log("CalendarioMain: Usuario registrado", usuario);
+    this.mostrarMensajeExito(`Usuario ${usuario.nombre} ${usuario.apellido} registrado correctamente`);
+    // Opcional: recargar eventos si es necesario
+    this.cargarEventos();
+    },
+
     handleRuleta() {
       console.log("CalendarioMain: Propagando evento ruleta");
       this.$emit("ruleta");
